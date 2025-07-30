@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Submissions - Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        .admin-header {
+            background: var(--royal-green);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 0;
+        }
+        .admin-title {
+            text-align: center;
+            margin: 0;
+            font-size: 2rem;
+        }
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .contacts-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+        .contacts-table th,
+        .contacts-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .contacts-table th {
+            background: var(--royal-green);
+            color: white;
+            font-weight: 600;
+        }
+        .contacts-table tr:hover {
+            background: #f8f9fa;
+        }
+        .contact-date {
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+        .contact-sport {
+            background: var(--accent-green);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        .contact-message {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .no-contacts {
+            text-align: center;
+            padding: 3rem;
+            color: var(--light-text);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--royal-green);
+        }
+        .stat-label {
+            color: var(--light-text);
+            margin-top: 0.5rem;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background: var(--gold);
+            color: var(--dark-text);
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        @media (max-width: 768px) {
+            .contacts-table {
+                font-size: 0.9rem;
+            }
+            .contacts-table th,
+            .contacts-table td {
+                padding: 0.5rem;
+            }
+            .contact-message {
+                max-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="admin-container">
+            <h1 class="admin-title">Contact Submissions</h1>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <a href="{{ url_for('index') }}" class="back-btn">← Back to Website</a>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ contacts|length }}</div>
+                <div class="stat-label">Total Contacts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ contacts|selectattr('sport', 'equalto', 'padel')|list|length }}</div>
+                <div class="stat-label">Padel Interested</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ contacts|selectattr('sport', 'equalto', 'futsal')|list|length }}</div>
+                <div class="stat-label">Futsal Interested</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ contacts|selectattr('sport', 'equalto', 'multiple')|list|length }}</div>
+                <div class="stat-label">Multiple Sports</div>
+            </div>
+        </div>
+
+        {% if contacts %}
+            <table class="contacts-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Sport Interest</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in contacts %}
+                    <tr>
+                        <td>
+                            <div class="contact-date">
+                                {{ contact.timestamp.split('T')[0] }}<br>
+                                {{ contact.timestamp.split('T')[1].split('.')[0] }}
+                            </div>
+                        </td>
+                        <td><strong>{{ contact.name }}</strong></td>
+                        <td>
+                            <a href="mailto:{{ contact.email }}">{{ contact.email }}</a>
+                        </td>
+                        <td>
+                            <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a>
+                        </td>
+                        <td>
+                            {% if contact.sport %}
+                                <span class="contact-sport">{{ contact.sport.title() }}</span>
+                            {% else %}
+                                <span style="color: #999;">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="contact-message" title="{{ contact.message }}">
+                                {{ contact.message }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-contacts">
+                <h3>No contact submissions yet</h3>
+                <p>Contact forms will appear here when users submit them.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

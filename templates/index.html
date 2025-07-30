@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Noball Sports Club - Premium Sports Arena</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <img src="static/images/logo_bw.png" alt="The Noball Sports Club" class="loading-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="loading-logo-fallback" style="display: none;">N</div>
+            <div class="loading-text">Loading Premium Experience...</div>
+        </div>
+    </div>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <img src="static/images/logo.png" alt="The Noball Sports Club" class="logo-image">
+                <span>The Noball Sports Club</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#facilities">Facilities</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">
+                <div class="hamburger"></div>
+                <div class="hamburger"></div>
+                <div class="hamburger"></div>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-slider">
+            <div class="slide active" style="background-image: linear-gradient(rgba(27, 94, 32, 0.6), rgba(27, 94, 32, 0.4)), url('https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')"></div>
+            <div class="slide" style="background-image: linear-gradient(rgba(27, 94, 32, 0.6), rgba(27, 94, 32, 0.4)), url('https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')"></div>
+            <div class="slide" style="background-image: linear-gradient(rgba(27, 94, 32, 0.6), rgba(27, 94, 32, 0.4)), url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80')"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-logo">
+                <img src="static/images/logo_bw.png" alt="The Noball Sports Club Logo" class="hero-logo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="hero-logo-fallback" style="display: none;">N</div>
+            </div>
+            <h1 class="hero-title">Welcome to <span class="highlight">The Noball Sports Club</span></h1>
+            <p class="hero-subtitle">Premium Sports Arena with World-Class Facilities • Open 24/7</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('booking') }}" class="btn btn-primary">Book Now</a>
+                <a href="#facilities" class="btn btn-secondary">Explore Facilities</a>
+            </div>
+        </div>
+        <div class="premium-badge">Premium Arena</div>
+    </section>
+
+    <!-- Facilities Section -->
+    <section id="facilities" class="section">
+        <div class="container">
+            <h2 class="section-title">World-Class Facilities</h2>
+            <p class="section-subtitle">Experience the finest sports infrastructure with premium equipment and professional-grade courts</p>
+            
+            <div class="facilities-grid">
+                <div class="facility-card">
+                    <div class="facility-icon">🎾</div>
+                    <h3 class="facility-title">Padel Courts</h3>
+                    <p class="facility-desc">2 Professional padel courts with Mondo PU turf surfaces. Court 1: 110x45 ft, Court 2: 130x60 ft. Premium glass walls and professional lighting for the ultimate playing experience.</p>
+                </div>
+                
+                <div class="facility-card">
+                    <div class="facility-icon">🏏</div>
+                    <h3 class="facility-title">Cricket Court</h3>
+                    <p class="facility-desc">Regulation cricket court with high-quality Mondo PU turf surface. Perfect for practice sessions, coaching, and friendly matches with professional-grade equipment.</p>
+                </div>
+                
+                <div class="facility-card">
+                    <div class="facility-icon">⚽</div>
+                    <h3 class="facility-title">Futsal Court</h3>
+                    <p class="facility-desc">FIFA-standard futsal court accommodating 5v5 and 6v6 matches. Premium synthetic surface with proper drainage and professional goal posts.</p>
+                </div>
+                
+                <div class="facility-card">
+                    <div class="facility-icon">🏓</div>
+                    <h3 class="facility-title">Pickleball Court</h3>
+                    <p class="facility-desc">Official-size pickleball court with premium surface and professional nets. Perfect for all skill levels with proper court markings and lighting.</p>
+                </div>
+                
+                <div class="facility-card">
+                    <div class="facility-icon">☕</div>
+                    <h3 class="facility-title">24/7 Café</h3>
+                    <p class="facility-desc">Premium café facility open round the clock. Fresh beverages, healthy snacks, and comfortable seating area for players and visitors.</p>
+                </div>
+                
+                <div class="facility-card">
+                    <div class="facility-icon">🏆</div>
+                    <h3 class="facility-title">Premium Equipment</h3>
+                    <p class="facility-desc">Top-tier sports equipment available for rent. Professional-grade rackets, balls, and accessories for all sports offered at the club.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="section gallery">
+        <div class="container">
+            <h2 class="section-title">Our Premium Facilities</h2>
+            <p class="section-subtitle">Take a virtual tour of our state-of-the-art sports arena</p>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Padel Court 1">
+                    <div class="gallery-overlay">
+                        <h4 class="gallery-title">Padel Court 1 - 110x45 ft</h4>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Padel Court 2">
+                    <div class="gallery-overlay">
+                        <h4 class="gallery-title">Padel Court 2 - 130x60 ft</h4>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Futsal Court">
+                    <div class="gallery-overlay">
+                        <h4 class="gallery-title">Professional Futsal Court</h4>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1607455505842-50e217e9b65e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Pickleball Court">
+                    <div class="gallery-overlay">
+                        <h4 class="gallery-title">Pickleball Court</h4>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Cricket Court">
+                    <div class="gallery-overlay">
+                        <h4 class="gallery-title">Cricket Practice Court</h4>
+                    </div>
+                </div>
+                
+                <div class="gallery-item">
+                    <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" alt="Café Area">
+                    <div class="gallery-overlay">
+                        <h4 class="gallery-title">24/7 Premium Café</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <div class="container">
+            <h2 class="section-title">About The Noball Sports Club</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Premium Sports Experience</h3>
+                    <p>The Noball Sports Club stands as a testament to excellence in sports infrastructure. Our world-class facility features premium Mondo PU turf surfaces across all courts, ensuring optimal playing conditions for athletes of all levels.</p>
+                    
+                    <p>Operating 24/7, we provide unmatched accessibility and convenience for our members. Whether you're a professional athlete or a weekend warrior, our facilities cater to your sporting needs with the highest standards of quality and service.</p>
+                    
+                    <ul class="about-features">
+                        <li>Premium Mondo PU turf surfaces</li>
+                        <li>Professional-grade equipment</li>
+                        <li>24/7 operational hours</li>
+                        <li>Expert maintenance and cleaning</li>
+                        <li>Modern lighting systems</li>
+                        <li>Climate-controlled environment</li>
+                        <li>Parking facilities</li>
+                        <li>Professional coaching available</li>
+                    </ul>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="About The Noball Sports Club">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <p class="section-subtitle">Ready to experience premium sports? Contact us for bookings and inquiries</p>
+            
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">📍</div>
+                        <div class="contact-details">
+                            <h4>Location</h4>
+                            <p>The Noball Sports Club<br>Premium Sports Arena<br>Your City, Pakistan</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">📞</div>
+                        <div class="contact-details">
+                            <h4>Phone</h4>
+                            <p>+92 XXX XXXXXXX<br>+92 XXX XXXXXXX</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">✉️</div>
+                        <div class="contact-details">
+                            <h4>Email</h4>
+                            <p>info@noballsports.com<br>bookings@noballsports.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">🕒</div>
+                        <div class="contact-details">
+                            <h4>Hours</h4>
+                            <p>Open 24/7<br>Café: Always Open<br>Booking: Available Anytime</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form class="contact-form" action="/submit-contact" method="POST">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sport">Sport of Interest</label>
+                        <select id="sport" name="sport" style="width: 100%; padding: 0.8rem; border: none; border-radius: 10px; background: rgba(255, 255, 255, 0.9); font-size: 1rem;">
+                            <option value="">Select a sport</option>
+                            <option value="padel">Padel</option>
+                            <option value="cricket">Cricket</option>
+                            <option value="futsal">Futsal</option>
+                            <option value="pickleball">Pickleball</option>
+                            <option value="multiple">Multiple Sports</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" placeholder="Tell us about your booking requirements or any questions..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>The Noball Sports Club</h4>
+                    <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6;">Premium sports arena offering world-class facilities for padel, cricket, futsal, and pickleball. Open 24/7 with professional equipment and café services.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#facilities">Facilities</a></li>
+                        <li><a href="#gallery">Gallery</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Sports</h4>
+                    <ul>
+                        <li><a href="#facilities">Padel Courts</a></li>
+                        <li><a href="#facilities">Cricket Court</a></li>
+                        <li><a href="#facilities">Futsal Court</a></li>
+                        <li><a href="#facilities">Pickleball Court</a></li>
+                        <li><a href="#facilities">Equipment Rental</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#contact">Court Booking</a></li>
+                        <li><a href="#facilities">Equipment Rental</a></li>
+                        <li><a href="#facilities">24/7 Café</a></li>
+                        <li><a href="#contact">Private Coaching</a></li>
+                        <li><a href="#contact">Event Hosting</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 The Noball Sports Club. All rights reserved. | Premium Sports Arena | Open 24/7</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Action Button -->
+    <a href="#contact" class="fab" title="Book Now">📞</a>
+
+    <script src="static/js/script.js"></script>
+</body>
+</html>

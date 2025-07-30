@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Court - The Noball Sports Club</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/booking.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="The Noball Sports Club" class="logo-image">
+                <span>The Noball Sports Club</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                <li><a href="{{ url_for('index') }}#facilities">Facilities</a></li>
+                <li><a href="{{ url_for('index') }}#gallery">Gallery</a></li>
+                <li><a href="{{ url_for('index') }}#about">About</a></li>
+                <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Booking Section -->
+    <section class="booking-section">
+        <div class="container">
+            <div class="booking-header">
+                <h1>Book Your Court</h1>
+                <p>Follow the simple steps below to secure your premium sports experience</p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Select Sport & Court</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Choose Time Slot</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Enter Details</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Payment & Confirmation</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Sport & Court Selection -->
+            <div class="booking-step active" id="step-1">
+                <h2>Step 1: Select Sport & Court</h2>
+                <div class="sports-grid">
+                    <div class="sport-card" data-sport="padel">
+                        <div class="sport-icon">🎾</div>
+                        <h3>Padel</h3>
+                        <p>Professional padel courts with premium surfaces</p>
+                        <div class="sport-courts">
+                            <div class="court-option" data-court="padel-1" data-court-name="Court 1: Purple Mondo">
+                                <span class="court-label">Court 1</span>
+                                <span class="court-desc">Purple Mondo Surface</span>
+                            </div>
+                            <div class="court-option" data-court="padel-2" data-court-name="Court 2: Teracotta">
+                                <span class="court-label">Court 2</span>
+                                <span class="court-desc">Teracotta Surface</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sport-card" data-sport="cricket">
+                        <div class="sport-icon">🏏</div>
+                        <h3>Cricket</h3>
+                        <p>Practice courts with professional equipment</p>
+                        <div class="sport-courts">
+                            <div class="court-option" data-court="cricket-1" data-court-name="Court 1: 110x50ft">
+                                <span class="court-label">Court 1</span>
+                                <span class="court-desc">110x50ft</span>
+                            </div>
+                            <div class="court-option" data-court="cricket-2" data-court-name="Court 2: 130x60ft (Multi-purpose)">
+                                <span class="court-label">Court 2</span>
+                                <span class="court-desc">130x60ft Multi-purpose</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sport-card" data-sport="futsal">
+                        <div class="sport-icon">⚽</div>
+                        <h3>Futsal</h3>
+                        <p>FIFA-standard futsal court for 5v5 games</p>
+                        <div class="sport-courts">
+                            <div class="court-option" data-court="futsal-1" data-court-name="Court 1: 130x60ft (Multi-purpose)">
+                                <span class="court-label">Court 1</span>
+                                <span class="court-desc">130x60ft Multi-purpose</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sport-card" data-sport="pickleball">
+                        <div class="sport-icon">🏓</div>
+                        <h3>Pickleball</h3>
+                        <p>Professional pickleball court with premium nets</p>
+                        <div class="sport-courts">
+                            <div class="court-option" data-court="pickleball-1" data-court-name="Court 1: Professional Setup">
+                                <span class="court-label">Court 1</span>
+                                <span class="court-desc">Professional Setup</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary next-step" disabled>Next: Choose Time Slot</button>
+            </div>
+
+            <!-- Step 2: Time Slot Selection -->
+            <div class="booking-step" id="step-2">
+                <h2>Step 2: Choose Your Time Slot</h2>
+                <div class="selected-info">
+                    <span id="selected-sport-display"></span> - <span id="selected-court-display"></span>
+                </div>
+                
+                <div class="date-selector">
+                    <label for="booking-date">Select Date:</label>
+                    <input type="date" id="booking-date" min="" required>
+                </div>
+
+                <div class="time-slots-container">
+                    <h3>Available Time Slots</h3>
+                    <div class="time-slots" id="time-slots">
+                        <!-- Time slots will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="step-buttons">
+                    <button class="btn btn-secondary prev-step">Previous</button>
+                    <button class="btn btn-primary next-step" disabled>Next: Enter Details</button>
+                </div>
+            </div>
+
+            <!-- Step 3: User Details -->
+            <div class="booking-step" id="step-3">
+                <h2>Step 3: Enter Your Details</h2>
+                <div class="booking-summary">
+                    <h3>Booking Summary</h3>
+                    <div class="summary-item">
+                        <span>Sport:</span> <span id="summary-sport"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Court:</span> <span id="summary-court"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Date:</span> <span id="summary-date"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Time:</span> <span id="summary-time"></span>
+                    </div>
+                    <div class="summary-item total">
+                        <span>Total Amount:</span> <span id="summary-amount">PKR 2,500</span>
+                    </div>
+                </div>
+
+                <form class="booking-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="player-name">Full Name *</label>
+                            <input type="text" id="player-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="player-phone">Phone Number *</label>
+                            <input type="tel" id="player-phone" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="player-email">Email Address</label>
+                            <input type="email" id="player-email">
+                        </div>
+                        <div class="form-group">
+                            <label for="player-count">Number of Players</label>
+                            <select id="player-count">
+                                <option value="2">2 Players</option>
+                                <option value="3">3 Players</option>
+                                <option value="4">4 Players</option>
+                                <option value="5">5 Players</option>
+                                <option value="6">6 Players</option>
+                                <option value="more">More than 6</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="special-requests">Special Requests (Optional)</label>
+                        <textarea id="special-requests" rows="3" placeholder="Equipment rental, coaching, refreshments, etc."></textarea>
+                    </div>
+                </form>
+
+                <div class="step-buttons">
+                    <button class="btn btn-secondary prev-step">Previous</button>
+                    <button class="btn btn-primary next-step" disabled>Next: Payment</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Payment & Confirmation -->
+            <div class="booking-step" id="step-4">
+                <h2>Step 4: Payment & Confirmation</h2>
+                
+                <div class="payment-info">
+                    <div class="payment-summary">
+                        <h3>Final Booking Summary</h3>
+                        <div class="summary-card">
+                            <div class="summary-row">
+                                <span>Sport:</span> <span id="final-sport"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Court:</span> <span id="final-court"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Date & Time:</span> <span id="final-datetime"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Player Name:</span> <span id="final-name"></span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Phone:</span> <span id="final-phone"></span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total Amount:</span> <span id="final-amount">PKR 2,500</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payment-details">
+                        <h3>Payment Instructions</h3>
+                        <div class="payment-methods">
+                            <div class="payment-method">
+                                <h4>💳 Bank Transfer</h4>
+                                <div class="account-details">
+                                    <p><strong>Account Title:</strong> The Noball Sports Club</p>
+                                    <p><strong>Account Number:</strong> 1234567890123456</p>
+                                    <p><strong>Bank:</strong> HBL Bank</p>
+                                    <p><strong>Branch:</strong> Main Branch</p>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method">
+                                <h4>📱 JazzCash / EasyPaisa</h4>
+                                <div class="account-details">
+                                    <p><strong>Account Number:</strong> 03XX-XXXXXXX</p>
+                                    <p><strong>Account Title:</strong> The Noball Sports Club</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-amounts">
+                            <div class="amount-option">
+                                <input type="radio" id="advance-payment" name="payment-type" value="advance" checked>
+                                <label for="advance-payment">
+                                    <strong>50% Advance Payment: PKR <span id="advance-amount">1,250</span></strong>
+                                    <small>Pay remaining 50% on arrival</small>
+                                </label>
+                            </div>
+                            <div class="amount-option">
+                                <input type="radio" id="full-payment" name="payment-type" value="full">
+                                <label for="full-payment">
+                                    <strong>Full Payment: PKR <span id="full-amount">2,500</span></strong>
+                                    <small>Complete payment in advance</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="whatsapp-section">
+                            <h4>📸 After Payment:</h4>
+                            <p>Send payment screenshot to our WhatsApp:</p>
+                            <a href="https://wa.me/923XXXXXXXXX" class="whatsapp-btn" target="_blank">
+                                📱 Send to WhatsApp: +92 3XX-XXXXXXX
+                            </a>
+                            <p class="verification-note">
+                                ⏰ Your booking will be confirmed within 30 minutes after payment verification by our support staff.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-buttons">
+                    <button class="btn btn-secondary prev-step">Previous</button>
+                    <button class="btn btn-primary" id="confirm-booking">Confirm Booking</button>
+                </div>
+            </div>
+
+            <!-- Booking Confirmation -->
+            <div class="booking-confirmation" id="booking-confirmation" style="display: none;">
+                <div class="confirmation-content">
+                    <div class="success-icon">✅</div>
+                    <h2>Booking Request Submitted!</h2>
+                    <p>Your booking request has been submitted successfully. Please complete the payment and send the screenshot to our WhatsApp number.</p>
+                    
+                    <div class="booking-id">
+                        <strong>Booking ID: <span id="generated-booking-id"></span></strong>
+                    </div>
+
+                    <div class="next-steps">
+                        <h3>Next Steps:</h3>
+                        <ol>
+                            <li>Make payment using the provided account details</li>
+                            <li>Take a screenshot of payment confirmation</li>
+                            <li>Send screenshot to our WhatsApp: +92 3XX-XXXXXXX</li>
+                            <li>Wait for confirmation from our support team</li>
+                        </ol>
+                    </div>
+
+                    <div class="contact-support">
+                        <p>Need help? Contact our support team:</p>
+                        <div class="support-contacts">
+                            <a href="tel:+923XXXXXXXXX" class="support-btn">📞 Call Support</a>
+                            <a href="https://wa.me/923XXXXXXXXX" class="support-btn">💬 WhatsApp</a>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+</body>
+</html>
