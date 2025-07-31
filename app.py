@@ -59,19 +59,39 @@ def get_booked_slots():
             if booking.get("status") == "confirmed" and booking.get("date") == date:
                 booking_court = booking.get("court")
 
-                # Check for multi-purpose court conflicts
-                if (
-                    court in MULTI_PURPOSE_COURTS
-                    and booking_court in MULTI_PURPOSE_COURTS
-                ):
-                    # Both courts use the same physical space
+                # Handle both new format (selectedSlots) and old format (single time)
+                if "selectedSlots" in booking:
+                    booking_selected_slots = booking.get("selectedSlots", [])
+                    # Check for multi-purpose court conflicts
                     if (
-                        MULTI_PURPOSE_COURTS[court]
-                        == MULTI_PURPOSE_COURTS[booking_court]
+                        court in MULTI_PURPOSE_COURTS
+                        and booking_court in MULTI_PURPOSE_COURTS
                     ):
-                        booked_slots.append(booking.get("time"))
-                elif booking_court == court:
-                    booked_slots.append(booking.get("time"))
+                        if (
+                            MULTI_PURPOSE_COURTS[court]
+                            == MULTI_PURPOSE_COURTS[booking_court]
+                        ):
+                            for slot in booking_selected_slots:
+                                booked_slots.append(slot["time"])
+                    elif booking_court == court:
+                        for slot in booking_selected_slots:
+                            booked_slots.append(slot["time"])
+                else:
+                    # Handle old format with single time field
+                    booking_time = booking.get("time")
+                    if booking_time:
+                        # Check for multi-purpose court conflicts
+                        if (
+                            court in MULTI_PURPOSE_COURTS
+                            and booking_court in MULTI_PURPOSE_COURTS
+                        ):
+                            if (
+                                MULTI_PURPOSE_COURTS[court]
+                                == MULTI_PURPOSE_COURTS[booking_court]
+                            ):
+                                booked_slots.append(booking_time)
+                        elif booking_court == court:
+                            booked_slots.append(booking_time)
 
         return jsonify(booked_slots)
 
@@ -82,56 +102,101 @@ def get_booked_slots():
 
 @app.route("/api/create-booking", methods=["POST"])
 def create_booking():
-    """Create a new booking"""
+    """Create a new booking with new time slot format"""
     try:
         booking_data = request.json
 
-        # Validate required fields
+        # Log the received data for debugging
+        print(f"Received booking data: {booking_data}")
+
+        # Validate required fields for NEW format only
         required_fields = [
             "sport",
             "court",
+            "courtName",
             "date",
-            "time",
+            "startTime",
+            "endTime",
+            "duration",
+            "selectedSlots",
             "playerName",
             "playerPhone",
         ]
+
+        missing_fields = []
         for field in required_fields:
-            if not booking_data.get(field):
-                return (
-                    jsonify(
-                        {
-                            "success": False,
-                            "message": f"Missing required field: {field}",
-                        }
-                    ),
-                    400,
-                )
+            value = booking_data.get(field)
+            if (
+                value is None
+                or value == ""
+                or (isinstance(value, list) and len(value) == 0)
+            ):
+                missing_fields.append(field)
+
+        if missing_fields:
+            error_msg = f'Missing required fields: {", ".join(missing_fields)}'
+            print(f"Validation error: {error_msg}")
+            print(f"Received data keys: {list(booking_data.keys())}")
+            return jsonify({"success": False, "message": error_msg}), 400
+
+        # Validate minimum duration (1 hour)
+        duration = booking_data.get("duration", 0)
+        if duration < 1:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Minimum booking duration is 1 hour",
+                    }
+                ),
+                400,
+            )
+
+        # Validate selectedSlots format
+        selected_slots = booking_data.get("selectedSlots", [])
+        if not isinstance(selected_slots, list) or len(selected_slots) < 2:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Invalid time slots selection - minimum 2 slots required",
+                    }
+                ),
+                400,
+            )
 
         # Generate booking ID
         booking_id = generate_booking_id()
 
-        # Create booking record
+        # Create booking record with NEW format
         booking = {
             "id": booking_id,
             "sport": booking_data["sport"],
             "court": booking_data["court"],
             "courtName": booking_data["courtName"],
             "date": booking_data["date"],
-            "time": booking_data["time"],
+            "startTime": booking_data["startTime"],
+            "endTime": booking_data["endTime"],
+            "duration": booking_data["duration"],
+            "selectedSlots": booking_data["selectedSlots"],
             "playerName": booking_data["playerName"],
             "playerPhone": booking_data["playerPhone"],
             "playerEmail": booking_data.get("playerEmail", ""),
             "playerCount": booking_data.get("playerCount", "2"),
             "specialRequests": booking_data.get("specialRequests", ""),
             "paymentType": booking_data.get("paymentType", "advance"),
-            "totalAmount": booking_data.get("totalAmount", 2500),
+            "totalAmount": booking_data.get("totalAmount", 0),
             "status": "pending_payment",  # pending_payment, confirmed, cancelled
             "createdAt": datetime.now().isoformat(),
             "paymentVerified": False,
         }
 
+        print(f"Created booking record: {booking['id']}")
+
         # Check for conflicts before saving
-        if is_slot_available(booking["court"], booking["date"], booking["time"]):
+        if are_slots_available(
+            booking["court"], booking["date"], booking["selectedSlots"]
+        ):
             # Save booking
             bookings_file = "data/bookings.json"
             bookings = []
@@ -141,15 +206,25 @@ def create_booking():
                 try:
                     with open(bookings_file, "r") as f:
                         bookings = json.load(f)
-                except json.JSONDecodeError:
+                    print(f"Loaded {len(bookings)} existing bookings")
+                except json.JSONDecodeError as e:
+                    print(f"Error reading bookings file: {e}")
                     bookings = []
 
             # Add new booking
             bookings.append(booking)
 
             # Save updated bookings
-            with open(bookings_file, "w") as f:
-                json.dump(bookings, f, indent=2)
+            try:
+                with open(bookings_file, "w") as f:
+                    json.dump(bookings, f, indent=2)
+                print(f"Saved booking {booking_id} successfully")
+            except Exception as e:
+                print(f"Error saving booking: {e}")
+                return (
+                    jsonify({"success": False, "message": "Failed to save booking"}),
+                    500,
+                )
 
             return jsonify({"success": True, "bookingId": booking_id})
         else:
@@ -157,19 +232,25 @@ def create_booking():
                 jsonify(
                     {
                         "success": False,
-                        "message": "Selected time slot is no longer available",
+                        "message": "One or more selected time slots are no longer available",
                     }
                 ),
                 409,
             )
 
     except Exception as e:
-        print(f"Error creating booking: {e}")
-        return jsonify({"success": False, "message": "Internal server error"}), 500
+        print(f"Error creating booking: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        return (
+            jsonify({"success": False, "message": f"Internal server error: {str(e)}"}),
+            500,
+        )
 
 
-def is_slot_available(court, date, time):
-    """Check if a time slot is available for booking"""
+def are_slots_available(court, date, selected_slots):
+    """Check if all selected time slots are available for booking"""
     bookings_file = "data/bookings.json"
 
     if not os.path.exists(bookings_file):
@@ -181,21 +262,36 @@ def is_slot_available(court, date, time):
     except json.JSONDecodeError:
         return True
 
+    # Get list of time slots from selected_slots
+    slot_times = [slot["time"] for slot in selected_slots]
+
     for booking in bookings:
         if (
             booking.get("status") in ["confirmed", "pending_payment"]
             and booking.get("date") == date
-            and booking.get("time") == time
         ):
 
             booking_court = booking.get("court")
 
+            # Handle both new and old booking formats
+            if "selectedSlots" in booking:
+                booking_slots = booking.get("selectedSlots", [])
+                booking_slot_times = [slot["time"] for slot in booking_slots]
+            else:
+                # Old format with single time
+                booking_time = booking.get("time")
+                booking_slot_times = [booking_time] if booking_time else []
+
             # Check for multi-purpose court conflicts
             if court in MULTI_PURPOSE_COURTS and booking_court in MULTI_PURPOSE_COURTS:
                 if MULTI_PURPOSE_COURTS[court] == MULTI_PURPOSE_COURTS[booking_court]:
-                    return False
+                    # Check if any slots overlap
+                    if any(slot_time in booking_slot_times for slot_time in slot_times):
+                        return False
             elif booking_court == court:
-                return False
+                # Check if any slots overlap
+                if any(slot_time in booking_slot_times for slot_time in slot_times):
+                    return False
 
     return True
 
@@ -332,9 +428,6 @@ def submit_contact():
         with open(contacts_file, "w") as f:
             json.dump(contacts, f, indent=2)
 
-        # Here you could also send an email notification
-        # send_email_notification(contact_data)
-
         return jsonify(
             {"success": True, "message": "Contact form submitted successfully"}
         )
@@ -346,7 +439,7 @@ def submit_contact():
 
 @app.route("/admin/contacts")
 def admin_contacts():
-    """Admin route to view contact submissions (add authentication in production)"""
+    """Admin route to view contact submissions"""
     try:
         contacts_file = "data/contacts.json"
         contacts = []
@@ -377,37 +470,6 @@ def server_error(error):
     return render_template("500.html"), 500
 
 
-# Optional: Email notification function
-def send_email_notification(contact_data):
-    """
-    Send email notification when a new contact form is submitted
-    Configure with your email service (Gmail, SendGrid, etc.)
-    """
-    # Example using Flask-Mail:
-    # from flask_mail import Mail, Message
-    #
-    # msg = Message(
-    #     subject=f"New Contact Form Submission from {contact_data['name']}",
-    #     recipients=['info@noballsports.com'],
-    #     body=f"""
-    #     New contact form submission:
-    #
-    #     Name: {contact_data['name']}
-    #     Email: {contact_data['email']}
-    #     Phone: {contact_data['phone']}
-    #     Sport Interest: {contact_data['sport']}
-    #     Message: {contact_data['message']}
-    #
-    #     Submitted at: {contact_data['timestamp']}
-    #     """
-    # )
-    # mail.send(msg)
-    pass
-
-
 if __name__ == "__main__":
     # Development server
     app.run(debug=True, host="0.0.0.0", port=5001)
-
-    # For production, use:
-    # app.run(debug=False, host='0.0.0.0', port=80)

@@ -107,6 +107,22 @@ body {
     filter: brightness(0) invert(1); /* Ensures logo is white */
 }
 
+.loading-logo-fallback {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    animation: logoRotate 2s linear infinite;
+}
+
 .loading-text {
     font-size: 1.2rem;
     font-weight: 500;
@@ -192,6 +208,12 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    z-index: 1;
+}
+
+/* Ensure home section starts from top */
+#home {
+    scroll-margin-top: 0;
 }
 
 .hero-slider {
@@ -342,7 +364,24 @@ body {
 
 /* Facilities Section */
 .section {
-    padding: 5rem 0;
+    padding: 6rem 0 5rem;
+    position: relative;
+    z-index: 2;
+    background: white;
+}
+
+/* Ensure proper spacing for fixed header */
+.section:target {
+    scroll-margin-top: 100px;
+}
+
+#facilities {
+    scroll-margin-top: 120px;
+    padding-top: 6rem;
+    background: white;
+    margin-top: -2rem;
+    border-radius: 30px 30px 0 0;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
 }
 
 .container {
@@ -418,6 +457,8 @@ body {
 /* Gallery Section */
 .gallery {
     background: var(--cream);
+    position: relative;
+    z-index: 2;
 }
 
 .gallery-grid {
@@ -473,6 +514,8 @@ body {
 /* About Section */
 .about {
     background: white;
+    position: relative;
+    z-index: 2;
 }
 
 .about-content {
@@ -528,6 +571,8 @@ body {
 .contact {
     background: var(--royal-green);
     color: white;
+    position: relative;
+    z-index: 2;
 }
 
 .contact .section-title {
@@ -708,6 +753,18 @@ body {
     .gallery-grid {
         grid-template-columns: 1fr;
     }
+    
+    /* Mobile section padding adjustment */
+    .section {
+        padding: 4rem 0 3rem;
+    }
+    
+    #facilities {
+        padding-top: 4rem;
+        scroll-margin-top: 100px;
+        margin-top: -1rem;
+        border-radius: 20px 20px 0 0;
+    }
 }
 
 /* Animations */
@@ -729,6 +786,11 @@ body {
 /* Scroll behavior */
 html {
     scroll-behavior: smooth;
+}
+
+/* Override scroll behavior for instant home navigation */
+html.instant-scroll {
+    scroll-behavior: auto;
 }
 
 /* Loading states */

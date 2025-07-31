@@ -101,6 +101,22 @@
             gap: 1rem;
             margin-bottom: 2rem;
         }
+        
+        /* Mobile Stats Grid - 2 per row */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+        }
+        
         .stat-card {
             background: white;
             padding: 1.5rem;
@@ -108,14 +124,46 @@
             box-shadow: var(--shadow);
             text-align: center;
         }
+        
+        @media (max-width: 768px) {
+            .stat-card {
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-card {
+                padding: 0.8rem;
+            }
+        }
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
             color: var(--royal-green);
         }
+        
+        @media (max-width: 768px) {
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-number {
+                font-size: 1.2rem;
+            }
+        }
+        
         .stat-label {
             color: var(--light-text);
             margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 480px) {
+            .stat-label {
+                font-size: 0.8rem;
+            }
         }
         .back-btn {
             display: inline-block;
@@ -159,16 +207,126 @@
             border-radius: 25px;
             background: white;
         }
+        /* Mobile Responsive Table */
         @media (max-width: 768px) {
             .bookings-table {
                 font-size: 0.8rem;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
             }
+            
+            .bookings-table thead,
+            .bookings-table tbody,
             .bookings-table th,
+            .bookings-table td,
+            .bookings-table tr {
+                display: block;
+            }
+            
+            .bookings-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            .bookings-table tr {
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                margin-bottom: 1rem;
+                padding: 1rem;
+                position: relative;
+                box-shadow: var(--shadow);
+            }
+            
             .bookings-table td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                position: relative;
+                padding: 0.5rem 0 0.5rem 40%;
+                white-space: normal;
+                text-align: left;
+            }
+            
+            .bookings-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 6px;
+                width: 35%;
+                padding-right: 10px;
+                white-space: nowrap;
+                font-weight: bold;
+                color: var(--royal-green);
+                font-size: 0.8rem;
+            }
+            
+            .booking-actions {
+                flex-direction: row;
+                gap: 0.3rem;
+                justify-content: flex-start;
+            }
+            
+            .action-btn {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.7rem;
+            }
+            
+            .special-requests-row {
+                margin-top: -1rem;
+                background: #f8f9fa !important;
+                border-radius: 0 0 10px 10px;
+                font-style: italic;
+                padding: 0.8rem !important;
+            }
+            
+            .special-requests-row td {
                 padding: 0.5rem;
             }
-            .booking-actions {
+            
+            .special-requests-row td:before {
+                display: none;
+            }
+        }
+        
+        /* Additional mobile adjustments */
+        @media (max-width: 480px) {
+            .admin-container {
+                padding: 1rem 0.5rem;
+            }
+            
+            .admin-title {
+                font-size: 1.5rem;
+            }
+            
+            .back-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .filter-controls {
                 flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .filter-select {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            
+            .bookings-table tr {
+                padding: 0.8rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .bookings-table td {
+                padding: 0.4rem 0 0.4rem 35%;
+                font-size: 0.8rem;
+            }
+            
+            .bookings-table td:before {
+                width: 30%;
+                font-size: 0.7rem;
             }
         }
     </style>
@@ -239,21 +397,21 @@
                 <tbody>
                     {% for booking in bookings %}
                     <tr data-status="{{ booking.status }}" data-sport="{{ booking.sport }}" data-date="{{ booking.date }}">
-                        <td>
+                        <td data-label="Booking ID">
                             <strong>{{ booking.id }}</strong>
                             <div class="booking-date">
                                 Created: {{ booking.createdAt.split('T')[0] }}
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Date & Time">
                             <strong>{{ booking.date }}</strong><br>
                             <span class="booking-date">{{ booking.time }}</span>
                         </td>
-                        <td>
+                        <td data-label="Sport & Court">
                             <strong>{{ booking.sport.title() }}</strong><br>
                             <div class="court-info">{{ booking.courtName }}</div>
                         </td>
-                        <td>
+                        <td data-label="Player Details">
                             <div class="player-info">{{ booking.playerName }}</div>
                             <div class="booking-date">{{ booking.playerPhone }}</div>
                             {% if booking.playerEmail %}
@@ -261,7 +419,7 @@
                             {% endif %}
                             <div class="booking-date">{{ booking.playerCount }} players</div>
                         </td>
-                        <td>
+                        <td data-label="Payment">
                             <div class="payment-info">
                                 <strong>PKR {{ booking.totalAmount }}</strong><br>
                                 <span class="booking-date">
@@ -269,7 +427,7 @@
                                 </span>
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="booking-status status-{{ booking.status.replace('_', '-') }}">
                                 {% if booking.status == 'pending_payment' %}
                                     Pending Payment
@@ -280,7 +438,7 @@
                                 {% endif %}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Actions">
                             {% if booking.status == 'pending_payment' %}
                                 <div class="booking-actions">
                                     <a href="{{ url_for('confirm_booking', booking_id=booking.id) }}" 

@@ -22,11 +22,11 @@ window.addEventListener("beforeunload", () => {
   loadingScreen.id = "loading-screen-nav";
   loadingScreen.className = "loading-screen";
   loadingScreen.innerHTML = `
-        <div class="loading-content">
-            <img src="static/images/logo_bnw.png" alt="The Noball Sports Club" class="loading-logo">
-            <div class="loading-text">Loading Premium Experience...</div>
-        </div>
-    `;
+      <div class="loading-content">
+          <img src="static/images/logo_bnw.png" alt="The Noball Sports Club" class="loading-logo">
+          <div class="loading-text">Loading Premium Experience...</div>
+      </div>
+  `;
   document.body.appendChild(loadingScreen);
 });
 
@@ -40,8 +40,15 @@ mobileMenuBtn.addEventListener("click", () => {
 
 // Close mobile menu when clicking on a link
 document.querySelectorAll(".nav-menu a").forEach((link) => {
-  link.addEventListener("click", () => {
+  link.addEventListener("click", (e) => {
     navMenu.classList.remove("active");
+
+    // Additional handling for home link in mobile menu
+    if (link.getAttribute("href") === "#home") {
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+    }
   });
 });
 
@@ -58,16 +65,43 @@ function nextSlide() {
 // Auto-play slider
 setInterval(nextSlide, 5000);
 
-// Smooth scrolling for navigation links
+// Smooth scrolling for navigation links with special handling for home
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute("href"));
-    if (target) {
-      target.scrollIntoView({
+    e.stopPropagation();
+
+    const targetId = this.getAttribute("href");
+
+    // Special handling for home link
+    if (targetId === "#home") {
+      // Force scroll to absolute top
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      // Also use window.scrollTo as backup
+      window.scrollTo({
+        top: 0,
+        left: 0,
         behavior: "smooth",
-        block: "start",
       });
+    } else {
+      // Normal scroll behavior for other sections
+      const target = document.querySelector(targetId);
+      if (target) {
+        // Calculate offset for fixed header
+        const headerHeight = document.querySelector(".header").offsetHeight;
+        const targetPosition =
+          target.getBoundingClientRect().top +
+          window.pageYOffset -
+          headerHeight -
+          20;
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth",
+        });
+      }
     }
   });
 });
@@ -157,25 +191,25 @@ document.querySelectorAll(".gallery-item").forEach((item) => {
     // Create simple modal
     const modal = document.createElement("div");
     modal.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.9);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-                cursor: pointer;
-            ">
-                <div style="text-align: center;">
-                    <img src="${img.src}" style="max-width: 90%; max-height: 80vh; border-radius: 10px;">
-                    <h3 style="color: white; margin-top: 1rem;">${title}</h3>
-                </div>
-            </div>
-        `;
+          <div style="
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0,0,0,0.9);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              z-index: 9999;
+              cursor: pointer;
+          ">
+              <div style="text-align: center;">
+                  <img src="${img.src}" style="max-width: 90%; max-height: 80vh; border-radius: 10px;">
+                  <h3 style="color: white; margin-top: 1rem;">${title}</h3>
+              </div>
+          </div>
+      `;
 
     document.body.appendChild(modal);
 

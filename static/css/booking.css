@@ -233,39 +233,83 @@
     font-size: 1rem;
 }
 
-/* Time Slots */
+/* Time Slots with Day Separation */
 .time-slots-container h3 {
     color: var(--royal-green);
     margin-bottom: 1rem;
 }
 
-.time-slots {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 1rem;
+.time-slot-instruction {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.time-slot-instruction p {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    color: var(--royal-green);
+}
+
+.time-slot-instruction ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.time-slot-instruction li {
+    margin-bottom: 0.3rem;
+    color: var(--light-text);
+}
+
+.slots-grid-container {
+    margin-bottom: 1.5rem;
+}
+
+.day-section {
     margin-bottom: 2rem;
 }
 
+.day-section h4 {
+    color: var(--royal-green);
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--cream);
+    border-radius: 8px;
+    border-left: 4px solid var(--royal-green);
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 0.8rem;
+}
+
 .time-slot {
-    padding: 1rem;
+    padding: 0.8rem;
     border: 2px solid #ddd;
-    border-radius: 10px;
+    border-radius: 8px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     background: white;
+    font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .time-slot:hover {
     border-color: var(--accent-green);
     background: var(--accent-green);
     color: white;
+    transform: translateY(-2px);
 }
 
 .time-slot.selected {
     border-color: var(--royal-green);
     background: var(--royal-green);
     color: white;
+    box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
 }
 
 .time-slot.booked {
@@ -278,6 +322,36 @@
 .time-slot.booked:hover {
     background: #f8f8f8;
     color: #999;
+    transform: none;
+}
+
+.selected-slots-display {
+    margin-top: 1rem;
+}
+
+.selected-time-info {
+    background: var(--royal-green);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.selected-time-info h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.selected-time-info p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.selected-time-info p:last-child {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.3);
 }
 
 /* Booking Summary */
@@ -595,9 +669,14 @@
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
     
+    .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 0.5rem;
+    }
+    
     .time-slot {
-        padding: 0.8rem 0.5rem;
-        font-size: 0.9rem;
+        padding: 0.6rem 0.3rem;
+        font-size: 0.8rem;
     }
     
     .booking-step {
