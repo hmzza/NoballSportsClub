@@ -1,3 +1,4 @@
+<!-- booking.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +46,7 @@
                 </div>
                 <div class="progress-step" data-step="3">
                     <div class="step-number">3</div>
-                    <div class="step-label">Enter Details</div>
+                    <div class="step-label">Enter Your Details</div>
                 </div>
                 <div class="progress-step" data-step="4">
                     <div class="step-number">4</div>
@@ -54,7 +55,7 @@
             </div>
 
             <!-- Step 1: Sport & Court Selection -->
-            <div class="booking-step active" id="step-1">
+            <div class="booking-step active" id="step-1">                
                 <h2>Step 1: Select Sport & Court</h2>
                 <div class="sports-grid">
                     <div class="sport-card" data-sport="padel">
@@ -113,11 +114,15 @@
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary next-step" disabled>Next: Choose Time Slot</button>
+                
+                <div class="step-buttons">
+                    <button class="btn btn-primary next-step" disabled>Next: Choose Time Slot</button>
+                    <button class="step-back-btn">← Back to Home</button>
+                </div>
             </div>
 
             <!-- Step 2: Time Slot Selection -->
-            <div class="booking-step" id="step-2">
+            <div class="booking-step" id="step-2">                
                 <h2>Step 2: Choose Your Time Slot</h2>
                 <div class="selected-info">
                     <span id="selected-sport-display"></span> - <span id="selected-court-display"></span>
@@ -136,13 +141,13 @@
                 </div>
 
                 <div class="step-buttons">
-                    <button class="btn btn-secondary prev-step">Previous</button>
-                    <button class="btn btn-primary next-step" disabled>Next: Enter Details</button>
+                    <button class="btn btn-primary next-step" disabled>Next: Enter Your Details</button>
+                    <button class="step-back-btn">← Previous Step</button>
                 </div>
             </div>
 
             <!-- Step 3: User Details -->
-            <div class="booking-step" id="step-3">
+            <div class="booking-step" id="step-3">  
                 <h2>Step 3: Enter Your Details</h2>
                 <div class="booking-summary">
                     <h3>Booking Summary</h3>
@@ -198,13 +203,13 @@
                 </form>
 
                 <div class="step-buttons">
-                    <button class="btn btn-secondary prev-step">Previous</button>
                     <button class="btn btn-primary next-step" disabled>Next: Payment</button>
+                    <button class="step-back-btn">← Previous Step</button>
                 </div>
             </div>
 
             <!-- Step 4: Payment & Confirmation -->
-            <div class="booking-step" id="step-4">
+            <div class="booking-step" id="step-4">  
                 <h2>Step 4: Payment & Confirmation</h2>
                 
                 <div class="payment-info">
@@ -285,8 +290,8 @@
                 </div>
 
                 <div class="step-buttons">
-                    <button class="btn btn-secondary prev-step">Previous</button>
                     <button class="btn btn-primary" id="confirm-booking">Confirm Booking</button>
+                    <button class="step-back-btn">← Previous Step</button>
                 </div>
             </div>
 

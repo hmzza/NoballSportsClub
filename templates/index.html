@@ -28,6 +28,7 @@
                 <li><a href="#facilities">Facilities</a></li>
                 <li><a href="#gallery">Gallery</a></li>
                 <li><a href="#about">About</a></li>
+                <li><a href="#location">Location</a></li>
                 <li><a href="#contact">Contact</a></li>
             </ul>
             <button class="mobile-menu-btn">
@@ -67,37 +68,49 @@
             
             <div class="facilities-grid">
                 <div class="facility-card">
-                    <div class="facility-icon">🎾</div>
+                    <div class="facility-icon">
+                        <img src="static/images/sports_icons/padel.png" alt="Padel" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='🎾';">
+                    </div>
                     <h3 class="facility-title">Padel Courts</h3>
                     <p class="facility-desc">2 Professional padel courts with Mondo PU turf surfaces. Court 1: 110x45 ft, Court 2: 130x60 ft. Premium glass walls and professional lighting for the ultimate playing experience.</p>
                 </div>
                 
                 <div class="facility-card">
-                    <div class="facility-icon">🏏</div>
+                    <div class="facility-icon">
+                        <img src="static/images/sports_icons/cricket.png" alt="Cricket" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='🏏';">
+                    </div>
                     <h3 class="facility-title">Cricket Court</h3>
                     <p class="facility-desc">Regulation cricket court with high-quality Mondo PU turf surface. Perfect for practice sessions, coaching, and friendly matches with professional-grade equipment.</p>
                 </div>
                 
                 <div class="facility-card">
-                    <div class="facility-icon">⚽</div>
+                    <div class="facility-icon">
+                        <img src="static/images/sports_icons/futsal.png" alt="Futsal" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='⚽';">
+                    </div>
                     <h3 class="facility-title">Futsal Court</h3>
                     <p class="facility-desc">FIFA-standard futsal court accommodating 5v5 and 6v6 matches. Premium synthetic surface with proper drainage and professional goal posts.</p>
                 </div>
                 
                 <div class="facility-card">
-                    <div class="facility-icon">🏓</div>
+                    <div class="facility-icon">
+                        <img src="static/images/sports_icons/pickleball.png" alt="Pickleball" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='🏓';">
+                    </div>
                     <h3 class="facility-title">Pickleball Court</h3>
                     <p class="facility-desc">Official-size pickleball court with premium surface and professional nets. Perfect for all skill levels with proper court markings and lighting.</p>
                 </div>
                 
                 <div class="facility-card">
-                    <div class="facility-icon">☕</div>
+                    <div class="facility-icon">
+                        <img src="static/images/sports_icons/cafe.png" alt="Café" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='☕';">
+                    </div>
                     <h3 class="facility-title">24/7 Café</h3>
                     <p class="facility-desc">Premium café facility open round the clock. Fresh beverages, healthy snacks, and comfortable seating area for players and visitors.</p>
                 </div>
                 
                 <div class="facility-card">
-                    <div class="facility-icon">🏆</div>
+                    <div class="facility-icon">
+                        <img src="static/images/sports_icons/premium_facilities.png" alt="Equipment" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='🏆';">
+                    </div>
                     <h3 class="facility-title">Premium Equipment</h3>
                     <p class="facility-desc">Top-tier sports equipment available for rent. Professional-grade rackets, balls, and accessories for all sports offered at the club.</p>
                 </div>
@@ -186,6 +199,26 @@
         </div>
     </section>
 
+<!-- Location Section -->
+<section id="location" class="section location">
+    <div class="container">
+        <h2 class="section-title">Find Us</h2>
+        <p class="section-subtitle">Visit our premium sports arena - conveniently located and easily accessible</p>
+        
+        <div class="location-map-only">
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3321.120991458928!2d72.98316287585624!3d33.65402673865208!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38df97b3803104b1%3A0xfa56b3a8f2af08af!2sNo%20Ball%20Sports%20Club%20%7C%20Cricket%20%7C%20Futsal%20%7C%20Padel!5e0!3m2!1sen!2s!4v1754179674694!5m2!1sen!2s" 
+                width="100%" 
+                height="500" 
+                style="border:0; border-radius: 20px;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </div>
+</section>
+
     <!-- Contact Section -->
     <section id="contact" class="section contact">
         <div class="container">
@@ -195,15 +228,20 @@
             <div class="contact-content">
                 <div class="contact-info">
                     <div class="contact-item">
-                        <div class="contact-icon">📍</div>
+                        <div class="contact-icon">
+                            <img src="static/images/contact_icons/location.png" alt="Location" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='📍';">
+                        </div>
                         <div class="contact-details">
                             <h4>Location</h4>
-                            <p>The Noball Sports Club<br>Premium Sports Arena<br>Your City, Pakistan</p>
+                            <p>The Noball Sports Club<br>G-12 Main Service Road, Kashmir Highway<br>Islamabad, Pakistan</p>
+                            <a href="https://share.google/YuWCEWVAqzenSBcsX" target="_blank" class="maps-link">📍 View on Google Maps</a>
                         </div>
                     </div>
                     
                     <div class="contact-item">
-                        <div class="contact-icon">📞</div>
+                        <div class="contact-icon">
+                            <img src="static/images/contact_icons/call.png" alt="Phone" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='📞';">
+                        </div>
                         <div class="contact-details">
                             <h4>Phone</h4>
                             <p>+92 329 3180180<br>+92 332 5021711</p>
@@ -211,7 +249,9 @@
                     </div>
                     
                     <div class="contact-item">
-                        <div class="contact-icon">✉️</div>
+                        <div class="contact-icon">
+                            <img src="static/images/contact_icons/email.png" alt="Email" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='✉️';">
+                        </div>
                         <div class="contact-details">
                             <h4>Email</h4>
                             <p>info@noballsports.com<br>bookings@noballsports.com</p>
@@ -219,7 +259,9 @@
                     </div>
                     
                     <div class="contact-item">
-                        <div class="contact-icon">🕒</div>
+                        <div class="contact-icon">
+                            <img src="static/images/contact_icons/hours.png" alt="Hours" onerror="this.parentElement.classList.add('emoji-fallback'); this.style.display='none'; this.parentElement.innerHTML='🕒';">
+                        </div>
                         <div class="contact-details">
                             <h4>Hours</h4>
                             <p>Open 24/7<br>Café: Always Open<br>Booking: Available Anytime</p>
@@ -282,6 +324,7 @@
                         <li><a href="#facilities">Facilities</a></li>
                         <li><a href="#gallery">Gallery</a></li>
                         <li><a href="#about">About Us</a></li>
+                        <li><a href="#location">Location</a></li>
                         <li><a href="#contact">Contact</a></li>
                     </ul>
                 </div>

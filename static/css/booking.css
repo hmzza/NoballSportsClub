@@ -1,41 +1,45 @@
-/* Booking System Styles */
+/* Mobile-First Booking System Styles */
+/* booking.css - Mobile Optimized */
+
 .booking-section {
-    padding: 6rem 0 3rem;
+    padding: 5rem 0 2rem;
     min-height: 100vh;
     background: var(--cream);
 }
 
 .booking-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
 }
 
 .booking-header h1 {
-    font-size: 2.5rem;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
     color: var(--royal-green);
     margin-bottom: 1rem;
 }
 
 .booking-header p {
-    font-size: 1.1rem;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
     color: var(--light-text);
 }
 
-/* Progress Bar */
+/* Mobile-First Progress Bar - Fixed Alignment */
 .progress-bar {
     display: flex;
     justify-content: center;
-    margin-bottom: 3rem;
+    align-items: center;
+    margin: 0 1rem 2rem 1rem;
     position: relative;
+    max-width: 100%;
 }
 
 .progress-bar::before {
     content: '';
     position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
+    top: 17px;
+    left: 12.5%;
+    right: 12.5%;
     height: 2px;
     background: #ddd;
     z-index: 1;
@@ -47,12 +51,15 @@
     align-items: center;
     position: relative;
     z-index: 2;
-    margin: 0 1rem;
+    background: var(--cream);
+    padding: 0 0.5rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .step-number {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     background: #ddd;
     color: #999;
@@ -62,6 +69,7 @@
     font-weight: bold;
     margin-bottom: 0.5rem;
     transition: all 0.3s ease;
+    font-size: 0.9rem;
 }
 
 .progress-step.active .step-number {
@@ -75,10 +83,10 @@
 }
 
 .step-label {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     color: var(--light-text);
     text-align: center;
-    max-width: 120px;
+    line-height: 1.2;
 }
 
 .progress-step.active .step-label {
@@ -86,14 +94,14 @@
     font-weight: 600;
 }
 
-/* Booking Steps */
+/* Booking Steps - Mobile First */
 .booking-step {
     display: none;
     background: white;
-    border-radius: 20px;
-    padding: 2rem;
+    border-radius: 15px;
+    padding: 1.5rem;
     box-shadow: var(--shadow);
-    margin-bottom: 2rem;
+    margin: 0 1rem 1rem 1rem;
 }
 
 .booking-step.active {
@@ -103,31 +111,36 @@
 
 .booking-step h2 {
     color: var(--royal-green);
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     text-align: center;
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
 }
 
-/* Sports Grid */
+/* Mobile-First Sports Grid - 1 per row (better design) */
 .sports-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
     margin-bottom: 2rem;
 }
 
 .sport-card {
     border: 2px solid #f0f0f0;
-    border-radius: 15px;
-    padding: 1.5rem;
+    border-radius: 12px;
+    padding: 1rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .sport-card:hover {
     border-color: var(--accent-green);
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     box-shadow: var(--shadow);
 }
 
@@ -138,13 +151,13 @@
 }
 
 .sport-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
 }
 
 .sport-card h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
     color: var(--royal-green);
 }
 
@@ -154,17 +167,19 @@
 
 .sport-card p {
     color: var(--light-text);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
 }
 
 .sport-card.selected p {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* Court Options */
+/* Court Options - Mobile Optimized */
 .sport-courts {
     display: none;
-    margin-top: 1rem;
+    margin-top: 0.8rem;
 }
 
 .sport-card.selected .sport-courts {
@@ -174,9 +189,9 @@
 .court-option {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 10px;
-    padding: 1rem;
-    margin: 0.5rem 0;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin: 0.4rem 0;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -194,27 +209,30 @@
 .court-label {
     font-weight: bold;
     display: block;
+    font-size: 0.9rem;
 }
 
 .court-desc {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     opacity: 0.8;
+    margin-top: 0.2rem;
 }
 
-/* Selected Info */
+/* Selected Info - Mobile */
 .selected-info {
     background: var(--royal-green);
     color: white;
     padding: 1rem;
     border-radius: 10px;
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     font-weight: 600;
+    font-size: 0.9rem;
 }
 
-/* Date Selector */
+/* Date Selector - Mobile */
 .date-selector {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .date-selector label {
@@ -222,94 +240,103 @@
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: var(--royal-green);
+    font-size: 0.9rem;
 }
 
 .date-selector input {
     width: 100%;
-    max-width: 300px;
     padding: 0.8rem;
     border: 2px solid #ddd;
     border-radius: 10px;
     font-size: 1rem;
 }
 
-/* Time Slots with Day Separation */
+/* Time Slots - Mobile Optimized */
 .time-slots-container h3 {
     color: var(--royal-green);
     margin-bottom: 1rem;
+    font-size: 1.1rem;
 }
 
 .time-slot-instruction {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
 }
 
 .time-slot-instruction p {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.4rem 0;
     font-weight: 600;
     color: var(--royal-green);
+    font-size: 0.9rem;
 }
 
 .time-slot-instruction ul {
     margin: 0;
-    padding-left: 1.5rem;
+    padding-left: 1.2rem;
 }
 
 .time-slot-instruction li {
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
     color: var(--light-text);
+    font-size: 0.8rem;
 }
 
 .slots-grid-container {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .day-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .day-section h4 {
     color: var(--royal-green);
-    margin-bottom: 1rem;
-    padding: 0.5rem 1rem;
+    margin-bottom: 0.8rem;
+    padding: 0.5rem 0.8rem;
     background: var(--cream);
-    border-radius: 8px;
-    border-left: 4px solid var(--royal-green);
+    border-radius: 6px;
+    border-left: 3px solid var(--royal-green);
+    font-size: 0.9rem;
 }
 
+/* Mobile-First Time Slots Grid */
 .slots-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 0.8rem;
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    gap: 0.6rem;
 }
 
 .time-slot {
-    padding: 0.8rem;
+    padding: 0.6rem 0.3rem;
     border: 2px solid #ddd;
-    border-radius: 8px;
+    border-radius: 6px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     background: white;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     font-weight: 500;
+    min-height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .time-slot:hover {
     border-color: var(--accent-green);
     background: var(--accent-green);
     color: white;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .time-slot.selected {
     border-color: var(--royal-green);
     background: var(--royal-green);
     color: white;
-    box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
+    box-shadow: 0 2px 8px rgba(27, 94, 32, 0.3);
 }
 
 .time-slot.booked {
@@ -325,6 +352,7 @@
     transform: none;
 }
 
+/* Selected Time Display - Mobile */
 .selected-slots-display {
     margin-top: 1rem;
 }
@@ -332,39 +360,40 @@
 .selected-time-info {
     background: var(--royal-green);
     color: white;
-    padding: 1.5rem;
-    border-radius: 12px;
+    padding: 1rem;
+    border-radius: 10px;
     text-align: center;
 }
 
 .selected-time-info h4 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-}
-
-.selected-time-info p {
-    margin: 0.5rem 0;
+    margin: 0 0 0.8rem 0;
     font-size: 1rem;
 }
 
+.selected-time-info p {
+    margin: 0.4rem 0;
+    font-size: 0.9rem;
+}
+
 .selected-time-info p:last-child {
-    font-size: 1.2rem;
-    margin-top: 1rem;
-    padding-top: 1rem;
+    font-size: 1.1rem;
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
     border-top: 1px solid rgba(255,255,255,0.3);
 }
 
-/* Booking Summary */
+/* Mobile Form Styles */
 .booking-summary {
     background: var(--cream);
-    border-radius: 15px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .booking-summary h3 {
     color: var(--royal-green);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
 }
 
 .summary-item {
@@ -372,24 +401,25 @@
     justify-content: space-between;
     padding: 0.5rem 0;
     border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
 }
 
 .summary-item.total {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--royal-green);
     border-bottom: none;
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
 }
 
-/* Booking Form */
+/* Mobile Form Layout */
 .booking-form {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -403,6 +433,7 @@
     margin-bottom: 0.5rem;
     font-weight: 600;
     color: var(--royal-green);
+    font-size: 0.9rem;
 }
 
 .form-group input,
@@ -411,7 +442,7 @@
     width: 100%;
     padding: 0.8rem;
     border: 2px solid #ddd;
-    border-radius: 10px;
+    border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
 }
@@ -423,67 +454,70 @@
     border-color: var(--royal-green);
 }
 
-/* Payment Info */
+/* Mobile Payment Info */
 .payment-info {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
 }
 
 .summary-card {
     background: var(--cream);
-    border-radius: 15px;
-    padding: 1.5rem;
+    border-radius: 12px;
+    padding: 1rem;
 }
 
 .summary-row {
     display: flex;
     justify-content: space-between;
-    padding: 0.5rem 0;
+    padding: 0.4rem 0;
     border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
 }
 
 .summary-row.total {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--royal-green);
     border-bottom: none;
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
 }
 
 .payment-details h3 {
     color: var(--royal-green);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
 }
 
 .payment-methods {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .payment-method {
     background: white;
     border: 2px solid #f0f0f0;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 0.8rem;
 }
 
 .payment-method h4 {
     color: var(--royal-green);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
 }
 
 .account-details p {
-    margin: 0.3rem 0;
-    font-size: 0.9rem;
+    margin: 0.2rem 0;
+    font-size: 0.8rem;
 }
 
 .payment-amounts {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .amount-option {
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
 }
 
 .amount-option input[type="radio"] {
@@ -494,48 +528,120 @@
     display: flex;
     flex-direction: column;
     cursor: pointer;
+    font-size: 0.9rem;
 }
 
 .amount-option small {
     color: var(--light-text);
     margin-top: 0.2rem;
+    font-size: 0.75rem;
 }
 
 .whatsapp-section {
     background: #e8f5e8;
-    padding: 1rem;
-    border-radius: 10px;
+    padding: 0.8rem;
+    border-radius: 8px;
     text-align: center;
+}
+
+.whatsapp-section h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.whatsapp-section p {
+    font-size: 0.8rem;
+    margin: 0.3rem 0;
 }
 
 .whatsapp-btn {
     display: inline-block;
     background: #25D366;
     color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 25px;
+    padding: 0.8rem 1.2rem;
+    border-radius: 20px;
     text-decoration: none;
     font-weight: 600;
-    margin: 1rem 0;
+    margin: 0.8rem 0;
     transition: all 0.3s ease;
+    font-size: 0.85rem;
 }
 
 .whatsapp-btn:hover {
     background: #128C7E;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .verification-note {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: var(--light-text);
     font-style: italic;
+    line-height: 1.3;
 }
 
-/* Step Buttons */
+/* Mobile Step Back Button - With Text */
+.step-back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 1.2rem;
+    transition: all 0.3s ease;
+    display: none;
+    font-size: 0.85rem;
+}align-items: center;
+    justify-content: center;
+}
+
+.step-back-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
 .step-buttons {
     display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+.step-buttons .btn {
+    margin: 0;
+    width: 100%;
+    max-width: 280px;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+    border-radius: 25px;
+}
+
+/* Back button positioning below next button */
+.step-back-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    transition: all 0.3s ease;
+    display: none;
+    font-size: 0.85rem;
+    width: 100%;
+    max-width: 200px;
+}
+
+.step-back-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
 .next-step:disabled {
@@ -543,73 +649,88 @@
     cursor: not-allowed;
 }
 
-/* Booking Confirmation */
+/* Mobile Booking Confirmation */
 .booking-confirmation {
     background: white;
-    border-radius: 20px;
-    padding: 3rem;
+    border-radius: 15px;
+    padding: 2rem 1rem;
     text-align: center;
     box-shadow: var(--shadow);
+    margin: 0 1rem;
 }
 
 .success-icon {
-    font-size: 4rem;
+    font-size: 3rem;
     margin-bottom: 1rem;
 }
 
 .booking-confirmation h2 {
     color: var(--royal-green);
     margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.booking-confirmation p {
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .booking-id {
     background: var(--cream);
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 1.5rem 0;
-    font-size: 1.1rem;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 0.95rem;
 }
 
 .next-steps {
     text-align: left;
-    margin: 2rem 0;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 1.5rem 0;
 }
 
 .next-steps h3 {
     color: var(--royal-green);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
 }
 
 .next-steps ol {
-    padding-left: 1.5rem;
+    padding-left: 1.2rem;
 }
 
 .next-steps li {
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
+    margin-bottom: 0.4rem;
+    line-height: 1.4;
+    font-size: 0.85rem;
 }
 
 .contact-support {
-    margin: 2rem 0;
+    margin: 1.5rem 0;
+}
+
+.contact-support p {
+    font-size: 0.9rem;
 }
 
 .support-contacts {
     display: flex;
-    justify-content: center;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.8rem;
     margin-top: 1rem;
+    align-items: center;
 }
 
 .support-btn {
     display: inline-block;
-    padding: 0.8rem 1.5rem;
-    border-radius: 25px;
+    padding: 0.7rem 1.2rem;
+    border-radius: 20px;
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s ease;
+    font-size: 0.85rem;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
 }
 
 .support-btn:first-child {
@@ -623,80 +744,105 @@
 }
 
 .support-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: var(--shadow);
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-    .progress-bar {
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-    
-    .sports-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .payment-info {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .step-buttons {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .support-contacts {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .booking-header h1 {
-        font-size: 2rem;
-    }
-    
-    .progress-bar::before {
-        width: 80%;
-    }
-    
-    .time-slots {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
-    
-    .slots-grid {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-        gap: 0.5rem;
-    }
-    
-    .time-slot {
-        padding: 0.6rem 0.3rem;
-        font-size: 0.8rem;
+/* Tablet and Desktop Adjustments */
+@media (min-width: 768px) {
+    .booking-section {
+        padding: 6rem 0 3rem;
     }
     
     .booking-step {
+        margin: 0 auto 2rem auto;
+        max-width: 800px;
+        padding: 2rem;
+    }
+    
+    .sports-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .sport-card {
         padding: 1.5rem;
+        min-height: 180px;
     }
     
-    .booking-confirmation {
-        padding: 2rem 1rem;
+    .sport-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
     }
     
-    .summary-card {
-        padding: 1rem;
+    .sport-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
     }
     
-    .payment-method {
+    .sport-card p {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .payment-info {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .support-contacts {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    .slots-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.8rem;
+    }
+    
+    .time-slot {
         padding: 0.8rem;
+        font-size: 0.9rem;
+        min-height: 50px;
     }
     
-    .whatsapp-btn {
-        padding: 0.8rem 1rem;
+    .progress-bar {
+        margin: 0 auto 3rem auto;
+        max-width: 600px;
+        padding: 0 2rem;
+    }
+    
+    .progress-bar::before {
+        left: 10%;
+        right: 10%;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .step-label {
         font-size: 0.9rem;
+    }
+    
+    .progress-step {
+        max-width: 120px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .booking-step {
+        max-width: 1000px;
+        padding: 3rem;
+    }
+    
+    .sports-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }

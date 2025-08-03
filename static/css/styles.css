@@ -1,3 +1,5 @@
+/* Complete styles.css - Mobile-First Optimized */
+
 * {
     margin: 0;
     padding: 0;
@@ -22,6 +24,7 @@ body {
     line-height: 1.6;
     color: var(--dark-text);
     background: var(--white);
+    font-size: 16px; /* Prevent zoom on iOS */
 }
 
 /* Header Styles */
@@ -289,7 +292,7 @@ body {
 /* Fallback if logo doesn't load */
 .hero-logo-image[src=""], 
 .hero-logo-image:not([src]),
-.hero-logo-image[src="static/images/logo_bnw.png"]:not([alt]) {
+.hero-logo-image[src="static/images/logo_bw.png"]:not([alt]) {
     display: none;
 }
 
@@ -440,6 +443,21 @@ body {
     margin: 0 auto 1.5rem;
     font-size: 2rem;
     color: white;
+    overflow: hidden; /* Add this for image containment */
+}
+
+/* New styles for sport icon images */
+.facility-icon img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    filter: brightness(0) invert(1); /* Makes icons white */
+}
+
+/* Fallback for when images don't load */
+.facility-icon.emoji-fallback {
+    font-size: 2rem;
+    color: white;
 }
 
 .facility-title {
@@ -546,14 +564,23 @@ body {
     padding: 0.5rem 0;
     position: relative;
     padding-left: 2rem;
+    margin-bottom: 0.3rem; /* Add margin between items */
+    line-height: 1.5; /* Ensure proper line height */
 }
 
 .about-features li::before {
     content: '✓';
     position: absolute;
     left: 0;
+    top: 0.5rem; /* Align with first line of text */
     color: var(--light-green);
     font-weight: bold;
+    font-size: 1rem;
+    width: 1.5rem; /* Fixed width for consistency */
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .about-image {
@@ -565,6 +592,33 @@ body {
 .about-image img {
     width: 100%;
     height: auto;
+}
+
+/* Location Section */
+.location {
+    background: var(--cream);
+    position: relative;
+    z-index: 2;
+}
+
+.location-map-only {
+    margin-top: 3rem;
+    max-width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-hover);
+    transition: transform 0.3s ease;
+}
+
+.location-map-only:hover {
+    transform: translateY(-5px);
+}
+
+.location-map-only iframe {
+    width: 100%;
+    height: 500px;
+    border: none;
+    display: block;
 }
 
 /* Contact Section */
@@ -612,6 +666,21 @@ body {
     justify-content: center;
     font-size: 1.5rem;
     flex-shrink: 0;
+    overflow: hidden; /* Add this for image containment */
+}
+
+/* New styles for contact icon images */
+.contact-icon img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+    filter: brightness(0) invert(1); /* Makes icons white */
+}
+
+/* Fallback for when images don't load */
+.contact-icon.emoji-fallback {
+    font-size: 1.5rem;
+    color: white;
 }
 
 .contact-details h4 {
@@ -649,6 +718,27 @@ body {
 .form-group textarea {
     resize: vertical;
     min-height: 120px;
+}
+
+/* Google Maps link styling */
+.maps-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid var(--gold);
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.maps-link:hover {
+    background: var(--gold);
+    color: var(--dark-text);
+    transform: translateY(-1px);
 }
 
 /* Footer */
@@ -693,78 +783,6 @@ body {
     padding-top: 2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.6);
-}
-
-/* Mobile Styles */
-@media (max-width: 768px) {
-    .mobile-menu-btn {
-        display: block;
-    }
-
-    .nav-menu {
-        position: fixed;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        flex-direction: column;
-        padding: 2rem;
-        box-shadow: var(--shadow);
-        transform: translateY(-100%);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .nav-menu.active {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .hero-content {
-        padding: 0 1rem;
-    }
-
-    .cta-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .btn {
-        width: 100%;
-        max-width: 300px;
-    }
-
-    .about-content {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .contact-content {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-
-    .facilities-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .gallery-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    /* Mobile section padding adjustment */
-    .section {
-        padding: 4rem 0 3rem;
-    }
-    
-    #facilities {
-        padding-top: 4rem;
-        scroll-margin-top: 100px;
-        margin-top: -1rem;
-        border-radius: 20px 20px 0 0;
-    }
 }
 
 /* Animations */
@@ -844,4 +862,609 @@ html.instant-scroll {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: bold;
+}
+
+/* ============================================
+   MOBILE-FIRST RESPONSIVE DESIGN
+   ============================================ */
+
+/* Enhanced Mobile Navigation */
+@media (max-width: 768px) {
+    .header {
+        padding: 0.8rem 0;
+    }
+    
+    .nav-container {
+        padding: 0 1rem;
+    }
+    
+    .logo {
+        font-size: 1rem;
+    }
+    
+    .logo-image {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+        z-index: 1001;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        box-shadow: none;
+        transform: translateX(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        gap: 3rem;
+    }
+
+    .nav-menu.active {
+        transform: translateX(0);
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .nav-menu a {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--royal-green);
+    }
+}
+
+/* Hero Section Mobile Optimization */
+@media (max-width: 768px) {
+    .hero {
+        min-height: 100vh;
+        padding: 0 1rem;
+    }
+    
+    .hero-content {
+        padding: 2rem 1rem;
+        max-width: 100%;
+    }
+    
+    .hero-logo {
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-logo-image,
+    .hero-logo-fallback {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .hero-title {
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+    
+    .hero-subtitle {
+        font-size: clamp(1rem, 4vw, 1.2rem);
+        margin-bottom: 2rem;
+        line-height: 1.4;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        align-items: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 12px;
+    }
+}
+
+/* Facilities Section Mobile */
+@media (max-width: 768px) {
+    .section {
+        padding: 3rem 0 2rem;
+    }
+    
+    #facilities {
+        padding-top: 3rem;
+        margin-top: -1rem;
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .section-title {
+        font-size: clamp(1.8rem, 6vw, 2.5rem);
+        margin-bottom: 0.8rem;
+    }
+    
+    .section-subtitle {
+        font-size: 1rem;
+        padding: 0 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .facilities-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0 1rem;
+    }
+    
+    .facility-card {
+        padding: 1.5rem;
+        border-radius: 15px;
+    }
+    
+    .facility-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 1rem;
+    }
+    
+    .facility-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .facility-desc {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+}
+
+/* Gallery Section Mobile */
+@media (max-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+    
+    .gallery-item {
+        border-radius: 12px;
+        aspect-ratio: 16/10;
+    }
+    
+    .gallery-overlay {
+        padding: 1rem;
+    }
+    
+    .gallery-title {
+        font-size: 1rem;
+    }
+}
+
+/* About Section Mobile */
+@media (max-width: 768px) {
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+    
+    .about-text {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    
+    .about-text h3 {
+        font-size: 1.3rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .about-features {
+        margin-top: 1rem;
+    }
+    
+    .about-features li {
+        padding: 0.6rem 0;
+        padding-left: 2.5rem; /* More space for tick mark */
+        font-size: 0.95rem;
+        line-height: 1.6; /* Better line height for readability */
+        margin-bottom: 0.4rem; /* More space between items */
+    }
+    
+    .about-features li::before {
+        left: 0.5rem; /* Move tick mark slightly right */
+        top: 0.6rem; /* Align with text */
+        font-size: 1.1rem; /* Slightly larger tick */
+        width: 1.5rem;
+        height: 1.5rem;
+        background: var(--light-green);
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+    }
+    
+    .about-image {
+        border-radius: 15px;
+        order: -1; /* Show image first on mobile */
+    }
+}
+
+/* Location Section Mobile */
+@media (max-width: 768px) {
+    .location-map-only {
+        margin-top: 2rem;
+        margin: 2rem 1rem 0;
+        border-radius: 15px;
+    }
+    
+    .location-map-only iframe {
+        height: 300px;
+        border-radius: 15px;
+    }
+}
+
+/* Contact Section Mobile - Enhanced */
+@media (max-width: 768px) {
+    .contact {
+        padding: 3rem 0;
+    }
+    
+    .contact .section-title {
+        font-size: clamp(1.8rem, 6vw, 2.5rem);
+    }
+    
+    .contact .section-subtitle {
+        padding: 0 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .contact-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+    
+    .contact-info {
+        gap: 1.5rem;
+        order: 2; /* Show contact form first on mobile */
+    }
+    
+    .contact-form {
+        order: 1;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+    }
+    
+    .contact-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1.2rem;
+        border-radius: 12px;
+        backdrop-filter: blur(5px);
+    }
+    
+    .contact-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .contact-details h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .contact-details p {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .form-group {
+        margin-bottom: 1.2rem;
+    }
+    
+    .form-group label {
+        font-size: 0.95rem;
+        margin-bottom: 0.4rem;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.9rem;
+        font-size: 1rem;
+        border-radius: 8px;
+    }
+    
+    .form-group textarea {
+        min-height: 100px;
+    }
+    
+    .maps-link {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 15px;
+        margin-top: 0.4rem;
+    }
+}
+
+/* Footer Mobile Optimization */
+@media (max-width: 768px) {
+    .footer {
+        padding: 2rem 0 1rem;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 0 1rem;
+        text-align: center;
+    }
+    
+    .footer-section h4 {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .footer-section p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .footer-section ul {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .footer-section ul li {
+        padding: 0.2rem 0;
+    }
+    
+    .footer-section ul li a {
+        font-size: 0.9rem;
+    }
+    
+    .footer-bottom {
+        padding-top: 1.5rem;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        margin: 0 1rem;
+    }
+}
+
+/* FAB Mobile Optimization */
+@media (max-width: 768px) {
+    .fab {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 55px;
+        height: 55px;
+        font-size: 1.3rem;
+    }
+}
+
+/* Loading Screen Mobile */
+@media (max-width: 768px) {
+    .loading-logo,
+    .loading-logo-fallback {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .loading-text {
+        font-size: 1rem;
+        padding: 0 1rem;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (max-width: 768px) {
+    /* Larger touch targets */
+    .btn, .maps-link, .nav-menu a {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Better spacing for touch */
+    .facility-card:hover,
+    .gallery-item:hover,
+    .contact-item:hover {
+        transform: none; /* Disable hover effects on mobile */
+    }
+    
+    /* Improved readability */
+    body {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    /* Container padding for mobile */
+    .container {
+        padding: 0 1rem;
+    }
+}
+
+/* Landscape phone optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        min-height: 100vh;
+    }
+    
+    .hero-content {
+        padding: 1rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: row;
+        gap: 1rem;
+    }
+    
+    .btn {
+        width: auto;
+        min-width: 150px;
+    }
+}
+
+/* Small mobile devices (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    .hero-title {
+        font-size: 1.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .facility-card,
+    .contact-form,
+    .contact-item {
+        padding: 1rem;
+    }
+    
+    .footer-section ul {
+        grid-template-columns: 1fr;
+    }
+    
+    .about-features li {
+        padding-left: 2.2rem;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .about-features li::before {
+        left: 0.3rem;
+        font-size: 1rem;
+        width: 1.3rem;
+        height: 1.3rem;
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .facilities-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .about-content {
+        gap: 3rem;
+    }
+    
+    .contact-content {
+        gap: 3rem;
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* Large screens optimization */
+@media (min-width: 1200px) {
+    .facilities-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+    
+    .container {
+        max-width: 1400px;
+        padding: 0 2rem;
+    }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .hero-logo-image,
+    .logo-image,
+    .loading-logo {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+    /* Add dark mode styles here if needed */
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .slide {
+        transition: none;
+    }
+    
+    .hero-logo {
+        animation: none;
+    }
+    
+    .loading-logo,
+    .loading-logo-fallback {
+        animation: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .header,
+    .fab,
+    .loading-screen {
+        display: none;
+    }
+    
+    .hero {
+        min-height: auto;
+        page-break-after: always;
+    }
+    
+    .section {
+        page-break-inside: avoid;
+        padding: 1rem 0;
+    }
+    
+    body {
+        color: black;
+        background: white;
+    }
+    
+    .contact {
+        background: white;
+        color: black;
+    }
 }

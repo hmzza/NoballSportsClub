@@ -1,3 +1,4 @@
+// booking.js
 // Booking System JavaScript
 
 let currentStep = 1;
@@ -136,6 +137,11 @@ function setupEventListeners() {
     btn.addEventListener("click", prevStep);
   });
 
+  // NEW: Add step back buttons
+  document.querySelectorAll(".step-back-btn").forEach((btn) => {
+    btn.addEventListener("click", goBackOneStep);
+  });
+
   // Form validation
   document
     .getElementById("player-name")
@@ -153,6 +159,15 @@ function setupEventListeners() {
   document
     .getElementById("confirm-booking")
     .addEventListener("click", confirmBooking);
+}
+
+function goBackOneStep() {
+  if (currentStep > 1) {
+    prevStep();
+  } else {
+    // If already on step 1, go back to home page
+    window.location.href = "/";
+  }
 }
 
 function selectSport(event) {
@@ -269,6 +284,33 @@ function updateProgressBar() {
       step.classList.remove("completed");
     } else {
       step.classList.remove("active", "completed");
+    }
+  });
+
+  // Show/hide back buttons based on current step
+  updateBackButtonVisibility();
+}
+
+function updateBackButtonVisibility() {
+  const backButtons = document.querySelectorAll(".step-back-btn");
+
+  backButtons.forEach((btn) => {
+    const stepContainer = btn.closest(".booking-step");
+    if (stepContainer) {
+      const stepId = stepContainer.id;
+      const stepNumber = parseInt(stepId.replace("step-", ""));
+
+      if (stepNumber === currentStep) {
+        btn.style.display = "inline-block";
+        // Update button text based on step
+        if (currentStep === 1) {
+          btn.textContent = "← Back to Home";
+        } else {
+          btn.textContent = "← Previous Step";
+        }
+      } else {
+        btn.style.display = "none";
+      }
     }
   });
 }
@@ -658,6 +700,29 @@ function formatDate(dateString) {
   });
 }
 
+async function checkForConflicts() {
+  // Check for booking conflicts before final confirmation
+  try {
+    const response = await fetch("/api/check-conflicts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        court: bookingData.court,
+        date: bookingData.date,
+        selectedSlots: bookingData.selectedSlots,
+      }),
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error checking conflicts:", error);
+    return { hasConflict: true, message: "Error checking availability" };
+  }
+}
+
 async function confirmBooking() {
   const confirmBtn = document.getElementById("confirm-booking");
   confirmBtn.disabled = true;
@@ -690,6 +755,28 @@ async function confirmBooking() {
       return;
     }
 
+    // **NEW: Check for conflicts before proceeding**
+    confirmBtn.textContent = "Checking availability...";
+    const conflictCheck = await checkForConflicts();
+
+    if (conflictCheck.hasConflict) {
+      alert(
+        `Sorry, ${conflictCheck.message}. Please go back and select different time slots.`
+      );
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Confirm Booking";
+
+      // Optionally redirect back to time selection
+      // You can uncomment the lines below to go back to step 2
+      // currentStep = 2;
+      // document.getElementById('step-4').classList.remove('active');
+      // document.getElementById('step-2').classList.add('active');
+      // updateProgressBar();
+      // loadTimeSlots(); // Refresh time slots
+
+      return;
+    }
+
     // Prepare booking data for submission
     const submissionData = {
       sport: bookingData.sport,
@@ -713,6 +800,7 @@ async function confirmBooking() {
     console.log("Submission data:", submissionData);
 
     // Submit booking to server
+    confirmBtn.textContent = "Finalizing booking...";
     const response = await fetch("/api/create-booking", {
       method: "POST",
       headers: {
@@ -749,7 +837,6 @@ async function confirmBooking() {
     confirmBtn.textContent = "Confirm Booking";
   }
 }
-
 // Utility function to generate booking ID
 function generateBookingId() {
   const date = new Date();
