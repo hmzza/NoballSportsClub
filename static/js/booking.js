@@ -88,6 +88,11 @@ const TIME_SLOTS = [
   "05:30",
 ];
 
+// Initialize EmailJS
+(function () {
+  emailjs.init("uZNZEybypHzeY8duz"); // Replace with your EmailJS public key
+})();
+
 // Helper function to check if time is next day (midnight onwards)
 function isNextDayTime(time) {
   const hour = parseInt(time.split(":")[0]);
@@ -723,6 +728,134 @@ async function checkForConflicts() {
   }
 }
 
+// Helper function to format booking datetime for emails
+function formatBookingDateTimeForEmail(date, startTime, endTime) {
+  try {
+    const bookingDate = new Date(date);
+    const formattedDate = bookingDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const start12hr = formatTime(startTime);
+    const end12hr = formatTime(endTime);
+
+    // Check if booking spans multiple days
+    const startHour = parseInt(startTime.split(":")[0]);
+    const endHour = parseInt(endTime.split(":")[0]);
+
+    if (startHour >= 6 && endHour >= 6) {
+      // Same day booking
+      return `${formattedDate} from ${start12hr} to ${end12hr}`;
+    } else if (startHour >= 6 && endHour <= 5) {
+      // Starts today, ends tomorrow
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const nextDayFormatted = nextDay.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      return `${formattedDate} ${start12hr} to ${nextDayFormatted} ${end12hr}`;
+    } else {
+      // Both times are next day or complex case
+      return `${formattedDate} from ${start12hr} to ${end12hr}`;
+    }
+  } catch (error) {
+    console.error("Error formatting datetime:", error);
+    return `${date} from ${startTime} to ${endTime}`;
+  }
+}
+
+// SINGLE CORRECT admin email function - replace both duplicate functions with this
+async function sendAdminNotificationEmail(bookingData, bookingId) {
+  try {
+    console.log("🔄 Starting admin email process...");
+    console.log("📧 EmailJS Service ID: service_y85g6ha");
+    console.log("📧 EmailJS Template ID: template_ceqhxb3");
+
+    // Format booking datetime for email
+    const bookingDateTime = formatBookingDateTimeForEmail(
+      bookingData.date,
+      bookingData.startTime,
+      bookingData.endTime
+    );
+
+    // Create admin portal links
+    const baseUrl = window.location.origin;
+    const adminPortalLink = `${baseUrl}/admin/bookings`;
+    const confirmLink = `${baseUrl}/admin/confirm-booking/${bookingId}`;
+    const declineLink = `${baseUrl}/admin/decline-booking/${bookingId}`;
+
+    // Format payment type
+    const paymentType =
+      bookingData.paymentType === "advance"
+        ? "50% Advance Payment"
+        : "Full Payment";
+
+    // Prepare email template parameters for admin
+    const templateParams = {
+      // EmailJS template variables - these must match your template exactly
+      booking_id: bookingId,
+      sport:
+        bookingData.sport.charAt(0).toUpperCase() + bookingData.sport.slice(1),
+      court_name: bookingData.courtName,
+      booking_datetime: bookingDateTime,
+      duration: bookingData.duration.toString(),
+      total_amount: bookingData.totalAmount.toLocaleString(),
+      payment_type: paymentType,
+      player_name: bookingData.playerName,
+      player_phone: bookingData.playerPhone,
+      player_email: bookingData.playerEmail || "Not provided",
+      player_count: bookingData.playerCount || "2",
+      special_requests: bookingData.specialRequests || "None",
+      admin_portal_link: adminPortalLink,
+      confirm_link: confirmLink,
+      decline_link: declineLink,
+      submission_time: new Date().toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      to_email: "noballarena@gmail.com",
+    };
+
+    console.log("📋 Template parameters prepared:", templateParams);
+
+    // Send admin notification email using YOUR correct template ID
+    console.log("📤 Sending admin email via EmailJS...");
+    const response = await emailjs.send(
+      "service_y85g6ha",
+      "template_ceqhxb3", // ✅ Your correct template ID
+      templateParams
+    );
+
+    console.log("✅ EmailJS Response:", response);
+    console.log("✅ Admin notification email sent successfully");
+    return true;
+  } catch (error) {
+    console.error("❌ EmailJS Error Details:", error);
+    console.error("❌ Error message:", error.message);
+    console.error("❌ Error status:", error.status);
+    console.error("❌ Error text:", error.text);
+
+    // Additional debugging
+    if (error.text) {
+      console.error("❌ EmailJS Error Response:", error.text);
+    }
+
+    return false;
+  }
+}
+
+// Remove customer email function since you don't have customer template
+// Updated confirmBooking function - admin email only
 async function confirmBooking() {
   const confirmBtn = document.getElementById("confirm-booking");
   confirmBtn.disabled = true;
@@ -755,7 +888,7 @@ async function confirmBooking() {
       return;
     }
 
-    // **NEW: Check for conflicts before proceeding**
+    // Check for conflicts before proceeding
     confirmBtn.textContent = "Checking availability...";
     const conflictCheck = await checkForConflicts();
 
@@ -765,15 +898,6 @@ async function confirmBooking() {
       );
       confirmBtn.disabled = false;
       confirmBtn.textContent = "Confirm Booking";
-
-      // Optionally redirect back to time selection
-      // You can uncomment the lines below to go back to step 2
-      // currentStep = 2;
-      // document.getElementById('step-4').classList.remove('active');
-      // document.getElementById('step-2').classList.add('active');
-      // updateProgressBar();
-      // loadTimeSlots(); // Refresh time slots
-
       return;
     }
 
@@ -810,8 +934,7 @@ async function confirmBooking() {
     });
 
     const result = await response.json();
-
-    console.log("Server response:", result); // Debug log
+    console.log("Server response:", result);
 
     if (result.success) {
       // Hide step 4 and show confirmation
@@ -820,10 +943,39 @@ async function confirmBooking() {
       document.getElementById("generated-booking-id").textContent =
         result.bookingId;
 
+      // Send admin notification email only
+      confirmBtn.textContent = "Sending notification to admin...";
+
+      try {
+        const adminEmailSent = await sendAdminNotificationEmail(
+          bookingData,
+          result.bookingId
+        );
+        console.log(`Admin email sent: ${adminEmailSent}`);
+
+        if (adminEmailSent) {
+          console.log("🎉 Admin has been notified via email!");
+        } else {
+          console.log(
+            "⚠️ Admin email failed, but booking was saved successfully"
+          );
+        }
+      } catch (adminEmailError) {
+        console.error("Admin email error:", adminEmailError);
+      }
+
+      // Reset button
+      confirmBtn.textContent = "Booking Confirmed ✓";
+      confirmBtn.style.background = "#28a745";
+      confirmBtn.style.color = "white";
+
       // Scroll to confirmation
       document
         .getElementById("booking-confirmation")
         .scrollIntoView({ behavior: "smooth" });
+
+      // Log completion
+      console.log("Booking process completed successfully");
     } else {
       throw new Error(result.message || "Booking failed");
     }
@@ -835,6 +987,8 @@ async function confirmBooking() {
 
     confirmBtn.disabled = false;
     confirmBtn.textContent = "Confirm Booking";
+    confirmBtn.style.background = "";
+    confirmBtn.style.color = "";
   }
 }
 // Utility function to generate booking ID

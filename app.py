@@ -6,6 +6,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import sql
 import json
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key-here"  # Change this to a random secret key
@@ -366,6 +367,10 @@ def create_booking():
             conn.close()
 
             print(f"Saved booking {booking_id} successfully")
+            print(
+                f"Email notifications will be sent by frontend for booking {booking_id}"
+            )
+
             return jsonify({"success": True, "bookingId": booking_id})
 
         except Exception as e:
