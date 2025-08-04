@@ -7,10 +7,14 @@ from psycopg2.extras import RealDictCursor
 from psycopg2 import sql
 import json
 from datetime import datetime, timedelta
+from admin_routes import admin_bp
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key-here"  # Change this to a random secret key
 
+app.register_blueprint(admin_bp)
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SECRET_KEY"] = "mysecretkey"
 # Database configuration
 DATABASE_CONFIG = {
     "host": "localhost",

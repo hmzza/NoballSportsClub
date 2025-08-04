@@ -1,4 +1,4 @@
-<!-- admin_bookings.html -->
+<!-- admin_bookings.html - Enhanced with new admin features -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,40 +7,204 @@
     <title>Booking Management - Admin Panel</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_bookings.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Enhanced header with navigation */
+        .admin-header {
+            background: linear-gradient(135deg, var(--royal-green), #1a5f3f);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 0;
+        }
+        
+        .admin-nav-bar {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .admin-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 2px solid transparent;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .nav-btn.active {
+            background: white;
+            color: var(--royal-green);
+            border-color: white;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .quick-stat {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-stat:hover {
+            transform: translateY(-2px);
+        }
+        
+        .quick-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--royal-green);
+        }
+        
+        .quick-stat-label {
+            font-size: 0.8rem;
+            color: var(--light-text);
+            margin-top: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                max-width: 250px;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="admin-header">
         <div class="admin-container">
-            <h1 class="admin-title">Booking Management System</h1>
+            <h1 class="admin-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Booking Management System
+            </h1>
+        </div>
+        
+        <!-- Enhanced Navigation -->
+        <div class="admin-nav-bar">
+            <div class="admin-container">
+                <nav class="admin-nav">
+                    <a href="/admin/bookings" class="nav-btn active">
+                        <i class="fas fa-list-alt"></i>
+                        Booking List
+                    </a>
+                    <a href="/admin/dashboard" class="nav-btn">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                    <a href="/admin/schedule" class="nav-btn">
+                        <i class="fas fa-calendar-alt"></i>
+                        Schedule View
+                    </a>
+                    <a href="/admin/booking-control" class="nav-btn">
+                        <i class="fas fa-cogs"></i>
+                        Booking Control
+                    </a>
+                    <a href="{{ url_for('index') }}" class="nav-btn">
+                        <i class="fas fa-home"></i>
+                        Website
+                    </a>
+                </nav>
+            </div>
         </div>
     </header>
 
     <div class="admin-container">
-        <a href="{{ url_for('index') }}" class="back-btn">← Back to Website</a>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ bookings|length }}</div>
-                <div class="stat-label">Total Bookings</div>
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <div class="quick-stat">
+                <div class="quick-stat-number">{{ bookings|length }}</div>
+                <div class="quick-stat-label">Total Bookings</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }}</div>
-                <div class="stat-label">Pending Payment</div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }}</div>
+                <div class="quick-stat-label">Pending</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</div>
-                <div class="stat-label">Confirmed</div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</div>
+                <div class="quick-stat-label">Confirmed</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'cancelled')|list|length }}</div>
-                <div class="stat-label">Cancelled</div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">{{ bookings|selectattr('status', 'equalto', 'cancelled')|list|length }}</div>
+                <div class="quick-stat-label">Cancelled</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">PKR {{ (bookings|selectattr('status', 'equalto', 'confirmed')|sum(attribute='totalAmount'))|int|string }}</div>
-                <div class="stat-label">Total Revenue</div>
+            <div class="quick-stat">
+                <div class="quick-stat-number">PKR {{ (bookings|selectattr('status', 'equalto', 'confirmed')|sum(attribute='totalAmount'))|int|string }}</div>
+                <div class="quick-stat-label">Revenue</div>
             </div>
         </div>
 
+        <!-- Feature Cards -->
+        <div class="stats-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card" style="cursor: pointer; transition: transform 0.3s ease;" onclick="window.location.href='/admin/dashboard'">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--royal-green), #1a5f3f); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--dark-text);">Enhanced Dashboard</div>
+                        <div style="color: var(--light-text); font-size: 0.9rem;">Modern analytics & quick actions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="cursor: pointer; transition: transform 0.3s ease;" onclick="window.location.href='/admin/schedule'">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #3498db, #2980b9); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--dark-text);">Schedule View</div>
+                        <div style="color: var(--light-text); font-size: 0.9rem;">Visual timeline like Google Sheets</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="cursor: pointer; transition: transform 0.3s ease;" onclick="window.location.href='/admin/booking-control'">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #9b59b6, #8e44ad); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--dark-text);">Booking Control</div>
+                        <div style="color: var(--light-text); font-size: 0.9rem;">Create, search & manage bookings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Existing Filter Controls -->
         <div class="filter-controls">
             <select class="filter-select" id="status-filter">
                 <option value="">All Statuses</option>
@@ -58,6 +222,7 @@
             <input type="date" class="filter-select" id="date-filter" placeholder="Filter by date">
         </div>
 
+        <!-- Existing Bookings Table -->
         {% if bookings %}
             <table class="bookings-table" id="bookings-table">
                 <thead>
@@ -164,12 +329,17 @@
             <div class="no-bookings">
                 <h3>No bookings yet</h3>
                 <p>Booking requests will appear here when users submit them.</p>
+                <div style="margin-top: 2rem;">
+                    <a href="/admin/booking-control" class="action-btn confirm-btn">
+                        <i class="fas fa-plus"></i> Create New Booking
+                    </a>
+                </div>
             </div>
         {% endif %}
     </div>
 
     <script>
-        // Filter functionality
+        // Enhanced filter functionality
         document.getElementById('status-filter').addEventListener('change', filterTable);
         document.getElementById('sport-filter').addEventListener('change', filterTable);
         document.getElementById('date-filter').addEventListener('change', filterTable);
@@ -214,8 +384,21 @@
         }, 30000);
 
         // Highlight pending bookings
-        document.querySelectorAll('.status-pending').forEach(element => {
+        document.querySelectorAll('.status-pending-payment').forEach(element => {
             element.parentElement.parentElement.style.backgroundColor = '#fff3cd';
+        });
+
+        // Add hover effects to stat cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+                this.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'var(--shadow)';
+            });
         });
     </script>
 </body>

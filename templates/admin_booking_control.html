@@ -1,0 +1,496 @@
+<!-- admin_booking_control.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Control - Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_booking_control.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="admin-container">
+            <h1 class="admin-title">
+                <i class="fas fa-cogs"></i>
+                Booking Control Center
+            </h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_panel.admin_dashboard') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Quick Actions -->
+        <div class="quick-actions-grid">
+            <div class="action-card create-card" id="create-booking-card">
+                <div class="card-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Create New Booking</h3>
+                    <p>Create a new booking directly from admin panel</p>
+                </div>
+            </div>
+
+            <div class="action-card search-card" id="search-booking-card">
+                <div class="card-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Find & Manage Booking</h3>
+                    <p>Search, update, or delete existing bookings</p>
+                </div>
+            </div>
+
+            <div class="action-card bulk-card" id="bulk-operations-card">
+                <div class="card-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Bulk Operations</h3>
+                    <p>Perform actions on multiple bookings</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Booking Section -->
+        <div class="section-card" id="create-booking-section" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-plus-circle"></i> Create New Booking</h2>
+                <button class="close-section-btn" data-section="create-booking-section">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="create-booking-form" class="booking-form">
+                <div class="form-section">
+                    <h3>Court & Time Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-sport">Sport *</label>
+                            <select id="create-sport" required>
+                                <option value="">Select Sport</option>
+                                <option value="padel">Padel</option>
+                                <option value="cricket">Cricket</option>
+                                <option value="futsal">Futsal</option>
+                                <option value="pickleball">Pickleball</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-court">Court *</label>
+                            <select id="create-court" required>
+                                <option value="">Select Court</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-date">Date *</label>
+                            <input type="date" id="create-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-start-time">Start Time *</label>
+                            <input type="time" id="create-start-time" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-duration">Duration (hours) *</label>
+                            <select id="create-duration" required>
+                                <option value="">Select Duration</option>
+                                <option value="0.5">30 minutes</option>
+                                <option value="1">1 hour</option>
+                                <option value="1.5">1.5 hours</option>
+                                <option value="2">2 hours</option>
+                                <option value="2.5">2.5 hours</option>
+                                <option value="3">3 hours</option>
+                                <option value="4">4 hours</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-amount">Total Amount (PKR)</label>
+                            <input type="number" id="create-amount" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Player Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-player-name">Player Name *</label>
+                            <input type="text" id="create-player-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-player-phone">Phone Number *</label>
+                            <input type="tel" id="create-player-phone" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-player-email">Email Address</label>
+                            <input type="email" id="create-player-email">
+                        </div>
+                        <div class="form-group">
+                            <label for="create-player-count">Number of Players</label>
+                            <select id="create-player-count">
+                                <option value="2">2 Players</option>
+                                <option value="3">3 Players</option>
+                                <option value="4">4 Players</option>
+                                <option value="5">5 Players</option>
+                                <option value="6">6 Players</option>
+                                <option value="more">More than 6</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Booking Settings</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="create-status">Booking Status *</label>
+                            <select id="create-status" required>
+                                <option value="pending_payment">Pending Payment</option>
+                                <option value="confirmed">Confirmed (Paid)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="create-payment-type">Payment Type</label>
+                            <select id="create-payment-type">
+                                <option value="advance">50% Advance</option>
+                                <option value="full">Full Payment</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="create-special-requests">Special Requests</label>
+                        <textarea id="create-special-requests" rows="3" placeholder="Equipment rental, coaching, refreshments, etc."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeSection('create-booking-section')">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Create Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Search & Manage Section -->
+        <div class="section-card" id="search-booking-section" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-search"></i> Find & Manage Booking</h2>
+                <button class="close-section-btn" data-section="search-booking-section">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="search-container">
+                <div class="search-methods">
+                    <div class="search-method active" data-method="id">
+                        <i class="fas fa-hashtag"></i>
+                        <span>By Booking ID</span>
+                    </div>
+                    <div class="search-method" data-method="phone">
+                        <i class="fas fa-phone"></i>
+                        <span>By Phone Number</span>
+                    </div>
+                    <div class="search-method" data-method="name">
+                        <i class="fas fa-user"></i>
+                        <span>By Player Name</span>
+                    </div>
+                    <div class="search-method" data-method="date">
+                        <i class="fas fa-calendar"></i>
+                        <span>By Date Range</span>
+                    </div>
+                </div>
+
+                <!-- Search by ID -->
+                <div class="search-form active" id="search-by-id">
+                    <div class="search-input-group">
+                        <input type="text" id="booking-id-input" placeholder="Enter Booking ID (e.g., NB20240101001)">
+                        <button class="search-btn" onclick="searchBookingById()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search by Phone -->
+                <div class="search-form" id="search-by-phone">
+                    <div class="search-input-group">
+                        <input type="tel" id="phone-input" placeholder="Enter Phone Number">
+                        <button class="search-btn" onclick="searchBookingByPhone()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search by Name -->
+                <div class="search-form" id="search-by-name">
+                    <div class="search-input-group">
+                        <input type="text" id="name-input" placeholder="Enter Player Name">
+                        <button class="search-btn" onclick="searchBookingByName()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search by Date -->
+                <div class="search-form" id="search-by-date">
+                    <div class="date-range-inputs">
+                        <div class="form-group">
+                            <label for="start-date">From Date</label>
+                            <input type="date" id="start-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="end-date">To Date</label>
+                            <input type="date" id="end-date">
+                        </div>
+                        <button class="search-btn" onclick="searchBookingByDate()">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div class="search-results" id="search-results" style="display: none;">
+                <h3>Search Results</h3>
+                <div class="results-container" id="results-container">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Operations Section -->
+        <div class="section-card" id="bulk-operations-section" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-tasks"></i> Bulk Operations</h2>
+                <button class="close-section-btn" data-section="bulk-operations-section">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="bulk-container">
+                <div class="bulk-filters">
+                    <h3>Filter Bookings</h3>
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label for="bulk-status">Status</label>
+                            <select id="bulk-status">
+                                <option value="">All Statuses</option>
+                                <option value="pending_payment">Pending Payment</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bulk-sport">Sport</label>
+                            <select id="bulk-sport">
+                                <option value="">All Sports</option>
+                                <option value="padel">Padel</option>
+                                <option value="cricket">Cricket</option>
+                                <option value="futsal">Futsal</option>
+                                <option value="pickleball">Pickleball</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="form-group">
+                            <label for="bulk-date-from">From Date</label>
+                            <input type="date" id="bulk-date-from">
+                        </div>
+                        <div class="form-group">
+                            <label for="bulk-date-to">To Date</label>
+                            <input type="date" id="bulk-date-to">
+                        </div>
+                    </div>
+                    <button class="filter-btn" onclick="loadBulkBookings()">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+
+                <div class="bulk-actions" id="bulk-actions" style="display: none;">
+                    <div class="selected-count">
+                        <span id="selected-count">0</span> bookings selected
+                    </div>
+                    <div class="action-buttons">
+                        <button class="bulk-action-btn confirm-bulk" onclick="bulkConfirm()">
+                            <i class="fas fa-check"></i> Confirm Selected
+                        </button>
+                        <button class="bulk-action-btn cancel-bulk" onclick="bulkCancel()">
+                            <i class="fas fa-times"></i> Cancel Selected
+                        </button>
+                        <button class="bulk-action-btn delete-bulk" onclick="bulkDelete()">
+                            <i class="fas fa-trash"></i> Delete Selected
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bulk-results" id="bulk-results">
+                    <!-- Bulk results will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Booking Modal -->
+    <div class="modal-overlay" id="edit-booking-modal-overlay">
+        <div class="modal" id="edit-booking-modal">
+            <div class="modal-header">
+                <h3>Edit Booking</h3>
+                <button class="close-btn" id="close-edit-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-booking-form">
+                    <input type="hidden" id="edit-booking-id">
+                    
+                    <div class="form-section">
+                        <h4>Court & Time Details</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-sport">Sport</label>
+                                <select id="edit-sport">
+                                    <option value="padel">Padel</option>
+                                    <option value="cricket">Cricket</option>
+                                    <option value="futsal">Futsal</option>
+                                    <option value="pickleball">Pickleball</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-court">Court</label>
+                                <select id="edit-court">
+                                    <!-- Will be populated based on sport -->
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-date">Date</label>
+                                <input type="date" id="edit-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-start-time">Start Time</label>
+                                <input type="time" id="edit-start-time">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-duration">Duration (hours)</label>
+                            <select id="edit-duration">
+                                <option value="0.5">30 minutes</option>
+                                <option value="1">1 hour</option>
+                                <option value="1.5">1.5 hours</option>
+                                <option value="2">2 hours</option>
+                                <option value="2.5">2.5 hours</option>
+                                <option value="3">3 hours</option>
+                                <option value="4">4 hours</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Player Information</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-player-name">Player Name</label>
+                                <input type="text" id="edit-player-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-player-phone">Phone Number</label>
+                                <input type="tel" id="edit-player-phone">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-player-email">Email Address</label>
+                                <input type="email" id="edit-player-email">
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-player-count">Number of Players</label>
+                                <select id="edit-player-count">
+                                    <option value="2">2 Players</option>
+                                    <option value="3">3 Players</option>
+                                    <option value="4">4 Players</option>
+                                    <option value="5">5 Players</option>
+                                    <option value="6">6 Players</option>
+                                    <option value="more">More than 6</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4>Booking Details</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edit-status">Status</label>
+                                <select id="edit-status">
+                                    <option value="pending_payment">Pending Payment</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edit-total-amount">Total Amount (PKR)</label>
+                                <input type="number" id="edit-total-amount">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-special-requests">Special Requests</label>
+                            <textarea id="edit-special-requests" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Update Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmation-modal-overlay">
+        <div class="modal confirmation-modal" id="confirmation-modal">
+            <div class="modal-header">
+                <h3 id="confirmation-title">Confirm Action</h3>
+            </div>
+            <div class="modal-body">
+                <div class="confirmation-content">
+                    <div class="confirmation-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <p id="confirmation-message">Are you sure you want to perform this action?</p>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeConfirmationModal()">Cancel</button>
+                    <button type="button" class="btn-danger" id="confirm-action-btn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin_booking_control.js') }}"></script>
+</body>
+</html>

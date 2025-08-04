@@ -1,0 +1,328 @@
+<!-- admin_schedule.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Management - Admin Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_schedule.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="admin-container">
+            <h1 class="admin-title">
+                <i class="fas fa-calendar-alt"></i>
+                Schedule Management
+            </h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin_panel.admin_dashboard') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <div class="date-controls">
+                <button class="date-nav-btn" id="prev-week">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="date-selector">
+                    <input type="date" id="schedule-date" value="">
+                    <span class="date-display" id="date-display"></span>
+                </div>
+                <button class="date-nav-btn" id="next-week">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <div class="view-controls">
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="week" id="week-view">
+                        <i class="fas fa-calendar-week"></i> Week
+                    </button>
+                    <button class="view-btn" data-view="day" id="day-view">
+                        <i class="fas fa-calendar-day"></i> Day
+                    </button>
+                </div>
+
+                <div class="sport-filter">
+                    <select id="sport-filter" class="filter-select">
+                        <option value="">All Sports</option>
+                        <option value="padel">Padel</option>
+                        <option value="cricket">Cricket</option>
+                        <option value="futsal">Futsal</option>
+                        <option value="pickleball">Pickleball</option>
+                    </select>
+                </div>
+
+                <button class="refresh-btn" id="refresh-schedule">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color available"></div>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color booked-pending"></div>
+                <span>Pending Payment</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color booked-confirmed"></div>
+                <span>Confirmed</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color booked-conflict"></div>
+                <span>Multi-Court Conflict</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color blocked"></div>
+                <span>Blocked/Maintenance</span>
+            </div>
+        </div>
+
+        <!-- Schedule Grid -->
+        <div class="schedule-container">
+            <div class="schedule-grid" id="schedule-grid">
+                <!-- Schedule will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading schedule...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slot Modal -->
+    <div class="modal-overlay" id="slot-modal-overlay">
+        <div class="modal" id="slot-modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Slot Details</h3>
+                <button class="close-btn" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="slot-info">
+                    <div class="info-group">
+                        <label>Court:</label>
+                        <span id="modal-court"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Date & Time:</label>
+                        <span id="modal-datetime"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Status:</label>
+                        <span id="modal-status" class="status-badge"></span>
+                    </div>
+                </div>
+
+                <!-- Available Slot Actions -->
+                <div class="available-actions" id="available-actions" style="display: none;">
+                    <div class="action-group">
+                        <button class="action-btn book-btn" id="book-slot-btn">
+                            <i class="fas fa-plus"></i> Book Slot
+                        </button>
+                        <button class="action-btn block-btn" id="block-slot-btn">
+                            <i class="fas fa-ban"></i> Block Slot
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Booked Slot Details -->
+                <div class="booking-details" id="booking-details" style="display: none;">
+                    <div class="booking-info">
+                        <div class="info-group">
+                            <label>Booking ID:</label>
+                            <span id="modal-booking-id"></span>
+                        </div>
+                        <div class="info-group">
+                            <label>Player:</label>
+                            <span id="modal-player"></span>
+                        </div>
+                        <div class="info-group">
+                            <label>Phone:</label>
+                            <span id="modal-phone"></span>
+                        </div>
+                        <div class="info-group">
+                            <label>Amount:</label>
+                            <span id="modal-amount"></span>
+                        </div>
+                        <div class="info-group">
+                            <label>Duration:</label>
+                            <span id="modal-duration"></span>
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="comments-section">
+                        <label for="slot-comments">Comments:</label>
+                        <textarea id="slot-comments" rows="3" placeholder="Add notes or comments about this booking..."></textarea>
+                        <button class="save-comment-btn" id="save-comment-btn">
+                            <i class="fas fa-save"></i> Save Comment
+                        </button>
+                    </div>
+
+                    <!-- Booking Actions -->
+                    <div class="booking-actions">
+                        <button class="action-btn confirm-btn" id="confirm-booking-btn" style="display: none;">
+                            <i class="fas fa-check"></i> Confirm Booking
+                        </button>
+                        <button class="action-btn decline-btn" id="decline-booking-btn" style="display: none;">
+                            <i class="fas fa-times"></i> Decline Booking
+                        </button>
+                        <button class="action-btn cancel-btn" id="cancel-booking-btn" style="display: none;">
+                            <i class="fas fa-ban"></i> Cancel Booking
+                        </button>
+                        <button class="action-btn edit-btn" id="edit-booking-btn">
+                            <i class="fas fa-edit"></i> Edit Booking
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Blocked Slot Actions -->
+                <div class="blocked-actions" id="blocked-actions" style="display: none;">
+                    <div class="info-group">
+                        <label>Reason:</label>
+                        <span id="modal-block-reason"></span>
+                    </div>
+                    <div class="action-group">
+                        <button class="action-btn unblock-btn" id="unblock-slot-btn">
+                            <i class="fas fa-unlock"></i> Unblock Slot
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Book Modal -->
+    <div class="modal-overlay" id="quick-book-modal-overlay">
+        <div class="modal" id="quick-book-modal">
+            <div class="modal-header">
+                <h3>Quick Book Slot</h3>
+                <button class="close-btn" id="close-quick-book-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="quick-book-form">
+                    <div class="form-group">
+                        <label for="quick-player-name">Player Name *</label>
+                        <input type="text" id="quick-player-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quick-player-phone">Phone Number *</label>
+                        <input type="tel" id="quick-player-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quick-player-email">Email Address</label>
+                        <input type="email" id="quick-player-email">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quick-duration">Duration (hours)</label>
+                            <select id="quick-duration">
+                                <option value="1">1 Hour</option>
+                                <option value="1.5">1.5 Hours</option>
+                                <option value="2">2 Hours</option>
+                                <option value="2.5">2.5 Hours</option>
+                                <option value="3">3 Hours</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="quick-player-count">Players</label>
+                            <select id="quick-player-count">
+                                <option value="2">2 Players</option>
+                                <option value="3">3 Players</option>
+                                <option value="4">4 Players</option>
+                                <option value="5">5 Players</option>
+                                <option value="6">6 Players</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quick-payment-status">Payment Status</label>
+                        <select id="quick-payment-status">
+                            <option value="pending_payment">Pending Payment</option>
+                            <option value="confirmed">Confirmed (Paid)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quick-comments">Comments</label>
+                        <textarea id="quick-comments" rows="3" placeholder="Special requests or notes..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-quick-book">Cancel</button>
+                        <button type="submit" class="btn-primary">Create Booking</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Block Slot Modal -->
+    <div class="modal-overlay" id="block-slot-modal-overlay">
+        <div class="modal" id="block-slot-modal">
+            <div class="modal-header">
+                <h3>Block Slot</h3>
+                <button class="close-btn" id="close-block-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="block-slot-form">
+                    <div class="form-group">
+                        <label for="block-reason">Reason for Blocking *</label>
+                        <select id="block-reason" required>
+                            <option value="">Select reason...</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="event">Private Event</option>
+                            <option value="repair">Equipment Repair</option>
+                            <option value="weather">Weather Related</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="block-duration">Duration (hours)</label>
+                        <select id="block-duration">
+                            <option value="0.5">30 minutes</option>
+                            <option value="1">1 Hour</option>
+                            <option value="2">2 Hours</option>
+                            <option value="3">3 Hours</option>
+                            <option value="4">4 Hours</option>
+                            <option value="8">8 Hours</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="block-notes">Additional Notes</label>
+                        <textarea id="block-notes" rows="3" placeholder="Additional details about the block..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" id="cancel-block">Cancel</button>
+                        <button type="submit" class="btn-primary">Block Slot</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin_schedule.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!-- admin_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - The Noball Sports Club</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="admin-header">
+        <div class="admin-container">
+            <h1 class="admin-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Admin Dashboard
+            </h1>
+            <div class="admin-nav">
+                <a href="{{ url_for('index') }}" class="nav-link">
+                    <i class="fas fa-home"></i> Website
+                </a>
+                <a href="#" class="nav-link" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ bookings|length }}</div>
+                    <div class="stat-label">Total Bookings</div>
+                </div>
+            </div>
+            
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }}</div>
+                    <div class="stat-label">Pending Payment</div>
+                </div>
+            </div>
+            
+            <div class="stat-card confirmed">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</div>
+                    <div class="stat-label">Confirmed</div>
+                </div>
+            </div>
+            
+            <div class="stat-card cancelled">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'cancelled')|list|length }}</div>
+                    <div class="stat-label">Cancelled</div>
+                </div>
+            </div>
+            
+            <div class="stat-card revenue">
+                <div class="stat-icon">
+                    <i class="fas fa-rupee-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-number">PKR {{ (bookings|selectattr('status', 'equalto', 'confirmed')|sum(attribute='totalAmount'))|int|string }}</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Management Cards -->
+        <div class="management-grid">
+            <div class="management-card" data-url="/admin/bookings">
+                <div class="card-icon">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Booking Management</h3>
+                    <p>View, confirm, or decline booking requests</p>
+                    <div class="card-stats">
+                        <span class="pending-count">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }} pending</span>
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <div class="management-card schedule-card" data-url="{{ url_for('admin_panel.admin_schedule') }}">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Schedule View</h3>
+                    <p>Visual schedule management and slot booking</p>
+                    <div class="card-stats">
+                        <span class="schedule-info">Graphical timeline view</span>
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <div class="management-card control-card" data-url="{{ url_for('admin_panel.admin_booking_control') }}">
+                <div class="card-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Booking Control</h3>
+                    <p>Create, update, or delete bookings directly</p>
+                    <div class="card-stats">
+                        <span class="control-info">Advanced management</span>
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <div class="management-card reports-card" onclick="generateReports()">
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Reports & Analytics</h3>
+                    <p>View detailed analytics and generate reports</p>
+                    <div class="card-stats">
+                        <span class="reports-info">Export available</span>
+                    </div>
+                </div>
+                <div class="card-arrow">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="actions-grid">
+                <button class="action-btn primary" onclick="createQuickBooking()">
+                    <i class="fas fa-plus"></i>
+                    Quick Booking
+                </button>
+                <button class="action-btn secondary" onclick="viewTodaySchedule()">
+                    <i class="fas fa-calendar-day"></i>
+                    Today's Schedule
+                </button>
+                <button class="action-btn tertiary" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    Export Data
+                </button>
+                <button class="action-btn quaternary" onclick="sendBulkNotifications()">
+                    <i class="fas fa-envelope"></i>
+                    Send Notifications
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h2>Recent Activity</h2>
+            <div class="activity-list">
+                {% for booking in bookings[:5] %}
+                <div class="activity-item">
+                    <div class="activity-icon status-{{ booking.status.replace('_', '-') }}">
+                        {% if booking.status == 'pending_payment' %}
+                            <i class="fas fa-clock"></i>
+                        {% elif booking.status == 'confirmed' %}
+                            <i class="fas fa-check"></i>
+                        {% elif booking.status == 'cancelled' %}
+                            <i class="fas fa-times"></i>
+                        {% endif %}
+                    </div>
+                    <div class="activity-content">
+                        <div class="activity-title">
+                            {{ booking.playerName }} - {{ booking.sport.title() }}
+                        </div>
+                        <div class="activity-details">
+                            {{ booking.courtName }} • {{ booking.formatted_time|safe }} • PKR {{ booking.totalAmount }}
+                        </div>
+                        <div class="activity-time">{{ booking.createdDateTime }}</div>
+                    </div>
+                    <div class="activity-status">
+                        <span class="status-badge status-{{ booking.status.replace('_', '-') }}">
+                            {% if booking.status == 'pending_payment' %}
+                                Pending
+                            {% elif booking.status == 'confirmed' %}
+                                Confirmed
+                            {% elif booking.status == 'cancelled' %}
+                                Cancelled
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+</body>
+</html>
