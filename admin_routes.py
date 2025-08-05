@@ -7,6 +7,7 @@ from flask import (
     redirect,
     url_for,
 )
+from functools import wraps
 from datetime import datetime, timedelta
 import json
 import psycopg2
@@ -47,6 +48,17 @@ MULTI_PURPOSE_COURTS = {"cricket-2": "multi-130x60", "futsal-1": "multi-130x60"}
 
 # Pricing configuration
 SPORT_PRICING = {"cricket": 3000, "futsal": 2500, "padel": 5500, "pickleball": 2500}
+
+
+# Authentication decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return redirect(url_for("admin_panel.admin_login"))
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 class AdminDatabaseManager:
@@ -94,15 +106,18 @@ class AdminDatabaseManager:
                 conn.close()
 
 
+# FIXED: Enhanced AdminScheduleService in admin_routes.py
+
+
 class AdminScheduleService:
-    """Professional admin schedule service"""
+    """Professional admin schedule service with FIXED booking display logic"""
 
     @staticmethod
     def get_schedule_data(start_date, end_date, sport_filter=None):
-        """Get comprehensive schedule data for date range"""
+        """Get comprehensive schedule data for date range - FIXED VERSION"""
         try:
             logger.info(
-                f"Admin fetching schedule: {start_date} to {end_date}, sport: {sport_filter}"
+                f"🔧 FIXED: Admin fetching schedule: {start_date} to {end_date}, sport: {sport_filter}"
             )
 
             schedule = {}
@@ -110,33 +125,67 @@ class AdminScheduleService:
             # Get courts based on filter
             if sport_filter and sport_filter in COURT_CONFIG:
                 courts = COURT_CONFIG[sport_filter]
+                logger.info(
+                    f"📋 Filtering by sport '{sport_filter}': {len(courts)} courts"
+                )
             else:
                 courts = []
                 for sport in ["padel", "cricket", "futsal", "pickleball"]:
                     courts.extend(COURT_CONFIG[sport])
+                logger.info(f"📋 All sports: {len(courts)} total courts")
 
             # Process each date in range
             current_date = datetime.strptime(start_date, "%Y-%m-%d")
             end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
 
+            logger.info(f"📅 Processing date range: {current_date} to {end_date_obj}")
+
             while current_date <= end_date_obj:
                 date_str = current_date.strftime("%Y-%m-%d")
                 schedule[date_str] = {}
+
+                logger.info(f"🗓️ Processing date: {date_str}")
 
                 # Process each court
                 for court in courts:
                     court_id = court["id"]
                     schedule[date_str][court_id] = {}
 
-                    # Get bookings for this court and date
-                    bookings = AdminScheduleService._get_court_bookings(
+                    # FIXED: Get bookings for this court and date with better query
+                    bookings = AdminScheduleService._get_court_bookings_fixed(
                         court_id, date_str
                     )
 
+                    logger.info(
+                        f"🏟️ Court {court_id} on {date_str}: Found {len(bookings)} bookings"
+                    )
+
                     # Process each booking
+                    booking_count = 0
                     for booking in bookings:
-                        slots = booking.get("selected_slots", [])
-                        if slots:
+                        try:
+                            slots = booking.get("selected_slots", [])
+
+                            # Handle both JSON string and parsed data
+                            if isinstance(slots, str):
+                                try:
+                                    slots = json.loads(slots)
+                                except json.JSONDecodeError:
+                                    logger.error(
+                                        f"❌ Invalid JSON in selected_slots for booking {booking.get('id')}"
+                                    )
+                                    continue
+
+                            if not slots:
+                                logger.warning(
+                                    f"⚠️ No slots found for booking {booking.get('id')}"
+                                )
+                                continue
+
+                            logger.info(
+                                f"🎯 Processing booking {booking.get('id')} with {len(slots)} slots: {slots}"
+                            )
+
                             for slot in slots:
                                 if isinstance(slot, dict) and "time" in slot:
                                     slot_time = slot["time"]
@@ -151,7 +200,8 @@ class AdminScheduleService:
                                         )
                                     )
 
-                                    schedule[date_str][court_id][slot_time] = {
+                                    # Create slot data
+                                    slot_data = {
                                         "status": (
                                             "booked-conflict"
                                             if is_conflict
@@ -175,33 +225,80 @@ class AdminScheduleService:
                                         "comments": booking.get("special_requests", ""),
                                     }
 
+                                    schedule[date_str][court_id][slot_time] = slot_data
+                                    booking_count += 1
+
+                                    logger.info(
+                                        f"✅ Added slot {slot_time} for court {court_id}: {slot_data['title']} ({slot_data['status']})"
+                                    )
+
+                        except Exception as e:
+                            logger.error(
+                                f"❌ Error processing booking {booking.get('id', 'unknown')}: {e}"
+                            )
+                            continue
+
+                    logger.info(
+                        f"📊 Court {court_id} on {date_str}: {booking_count} slots scheduled"
+                    )
+
                 current_date += timedelta(days=1)
 
-            logger.info(f"Admin schedule data prepared successfully")
+            # Final summary
+            total_scheduled_slots = 0
+            for date in schedule:
+                for court in schedule[date]:
+                    total_scheduled_slots += len(schedule[date][court])
+
+            logger.info(
+                f"📈 FIXED: Schedule data prepared successfully - {total_scheduled_slots} total scheduled slots"
+            )
             return schedule
 
         except Exception as e:
-            logger.error(f"Error getting admin schedule data: {e}")
+            logger.error(f"❌ Error getting admin schedule data: {e}")
+            import traceback
+
+            logger.error(f"❌ Full traceback: {traceback.format_exc()}")
             return {}
 
     @staticmethod
-    def _get_court_bookings(court_id, date):
-        """Get all bookings affecting a specific court on a date"""
+    def _get_court_bookings_fixed(court_id, date):
+        """FIXED: Get all bookings affecting a specific court on a date with better error handling"""
         try:
-            # Direct bookings for this court
-            direct_query = """
-                SELECT * FROM bookings 
-                WHERE status IN ('confirmed', 'pending_payment') 
-                AND booking_date = %s 
-                AND court = %s
-                ORDER BY start_time
-            """
+            logger.info(f"🔍 FIXED: Getting bookings for court {court_id} on {date}")
 
+            # FIXED: Direct bookings for this court with better query
+            if court_id == "pickleball-1":
+                direct_query = """
+                    SELECT * FROM bookings 
+                    WHERE status IN ('confirmed', 'pending_payment') 
+                    AND booking_date = %s 
+                    AND (court = %s OR sport = 'pickleball')
+                    ORDER BY start_time
+                """
+            else:
+                direct_query = """
+                    SELECT * FROM bookings 
+                    WHERE status IN ('confirmed', 'pending_payment') 
+                    AND booking_date = %s 
+                    AND court = %s
+                    ORDER BY start_time
+                """
+
+            logger.info(f"🗄️ Executing direct query for court {court_id} on {date}")
             direct_bookings = (
                 AdminDatabaseManager.execute_query(direct_query, (date, court_id)) or []
             )
+            logger.info(f"📋 Direct bookings found: {len(direct_bookings)}")
 
-            # Multi-purpose court conflicts
+            # Log each direct booking for debugging
+            for booking in direct_bookings:
+                logger.info(
+                    f"🎯 Direct booking: {booking.get('id')} - {booking.get('player_name')} - Status: {booking.get('status')}"
+                )
+
+            # FIXED: Multi-purpose court conflicts with better logic
             conflict_bookings = []
             if court_id in MULTI_PURPOSE_COURTS:
                 multi_court_type = MULTI_PURPOSE_COURTS[court_id]
@@ -212,9 +309,17 @@ class AdminScheduleService:
                 ]
 
                 if conflicting_courts:
+                    logger.info(
+                        f"🔄 Checking multi-purpose conflicts for {court_id} with courts: {conflicting_courts}"
+                    )
+
                     placeholders = ",".join(["%s"] * len(conflicting_courts))
                     conflict_query = f"""
-                        SELECT * FROM bookings 
+                        SELECT 
+                            id, sport, court, court_name, booking_date, start_time, end_time,
+                            duration, selected_slots, player_name, player_phone, player_email,
+                            total_amount, status, special_requests, created_at
+                        FROM bookings 
                         WHERE status IN ('confirmed', 'pending_payment') 
                         AND booking_date = %s 
                         AND court IN ({placeholders})
@@ -222,44 +327,209 @@ class AdminScheduleService:
                     """
 
                     conflict_params = [date] + conflicting_courts
+                    logger.info(
+                        f"🗄️ Executing conflict query with params: {conflict_params}"
+                    )
                     conflict_bookings = (
                         AdminDatabaseManager.execute_query(
                             conflict_query, conflict_params
                         )
                         or []
                     )
+                    logger.info(f"⚠️ Conflict bookings found: {len(conflict_bookings)}")
 
-            # Convert to list of dicts
+            # FIXED: Convert to list of dicts with proper error handling
             all_bookings = []
             for booking in direct_bookings + conflict_bookings:
-                booking_dict = dict(booking) if booking else {}
-                all_bookings.append(booking_dict)
+                try:
+                    if booking:
+                        booking_dict = dict(booking)
+                        # Ensure selected_slots is properly handled
+                        if booking_dict.get("selected_slots"):
+                            if isinstance(booking_dict["selected_slots"], str):
+                                try:
+                                    booking_dict["selected_slots"] = json.loads(
+                                        booking_dict["selected_slots"]
+                                    )
+                                except json.JSONDecodeError as e:
+                                    logger.error(
+                                        f"❌ JSON decode error for booking {booking_dict.get('id')}: {e}"
+                                    )
+                                    booking_dict["selected_slots"] = []
+                        else:
+                            booking_dict["selected_slots"] = []
 
+                        all_bookings.append(booking_dict)
+                        logger.info(
+                            f"✅ Added booking {booking_dict.get('id')} to results"
+                        )
+                except Exception as e:
+                    logger.error(f"❌ Error processing booking: {e}")
+                    continue
+
+            logger.info(
+                f"📊 FIXED: Returning {len(all_bookings)} total bookings for court {court_id} on {date}"
+            )
             return all_bookings
 
         except Exception as e:
-            logger.error(f"Error getting court bookings: {e}")
+            logger.error(f"❌ Error getting court bookings: {e}")
+            import traceback
+
+            logger.error(f"❌ Full traceback: {traceback.format_exc()}")
             return []
 
     @staticmethod
     def _is_multi_purpose_conflict(court_id, booking_court, slot_time, date):
         """Check if this is a multi-purpose court conflict"""
-        return (
-            court_id in MULTI_PURPOSE_COURTS
-            and booking_court != court_id
-            and booking_court in MULTI_PURPOSE_COURTS
-            and MULTI_PURPOSE_COURTS[court_id] == MULTI_PURPOSE_COURTS[booking_court]
-        )
+        try:
+            is_conflict = (
+                court_id in MULTI_PURPOSE_COURTS
+                and booking_court != court_id
+                and booking_court in MULTI_PURPOSE_COURTS
+                and MULTI_PURPOSE_COURTS[court_id]
+                == MULTI_PURPOSE_COURTS[booking_court]
+            )
+
+            if is_conflict:
+                logger.info(
+                    f"⚠️ Multi-purpose conflict detected: {court_id} vs {booking_court} at {slot_time}"
+                )
+
+            return is_conflict
+        except Exception as e:
+            logger.error(f"❌ Error checking multi-purpose conflict: {e}")
+            return False
 
     @staticmethod
     def _get_booking_status(booking):
         """Convert booking status to schedule status"""
-        status_map = {
-            "pending_payment": "booked-pending",
-            "confirmed": "booked-confirmed",
-            "cancelled": "booked-cancelled",
-        }
-        return status_map.get(booking.get("status"), "booked-pending")
+        try:
+            status_map = {
+                "pending_payment": "booked-pending",
+                "confirmed": "booked-confirmed",
+                "cancelled": "booked-cancelled",
+            }
+            db_status = booking.get("status", "unknown")
+            schedule_status = status_map.get(db_status, "booked-pending")
+
+            logger.info(f"🏷️ Status mapping: {db_status} -> {schedule_status}")
+            return schedule_status
+        except Exception as e:
+            logger.error(f"❌ Error getting booking status: {e}")
+            return "booked-pending"
+
+
+# FIXED: Enhanced API endpoint with better debugging
+@admin_bp.route("/api/schedule-data", methods=["POST"])
+@admin_required
+def api_schedule_data():
+    """FIXED: Get schedule data for date range with enhanced debugging"""
+    try:
+        data = request.json
+        start_date = data.get("startDate")
+        end_date = data.get("endDate")
+        sport_filter = data.get("sport")
+
+        logger.info(
+            f"🔧 FIXED: Schedule API called with: {start_date} to {end_date}, sport: {sport_filter}"
+        )
+
+        # Validate input dates
+        if not start_date or not end_date:
+            logger.error("❌ Missing start_date or end_date")
+            return jsonify(
+                {"success": False, "message": "Missing date parameters", "schedule": {}}
+            )
+
+        try:
+            datetime.strptime(start_date, "%Y-%m-%d")
+            datetime.strptime(end_date, "%Y-%m-%d")
+        except ValueError as e:
+            logger.error(f"❌ Invalid date format: {e}")
+            return jsonify(
+                {"success": False, "message": "Invalid date format", "schedule": {}}
+            )
+
+        # Test database connection first
+        test_query = "SELECT COUNT(*) as count FROM bookings WHERE booking_date BETWEEN %s AND %s"
+        test_result = AdminDatabaseManager.execute_query(
+            test_query, (start_date, end_date), fetch_one=True
+        )
+
+        if test_result:
+            total_bookings = test_result.get("count", 0)
+            logger.info(
+                f"📊 Database connection OK: {total_bookings} bookings in date range"
+            )
+        else:
+            logger.error("❌ Database connection failed")
+            return jsonify(
+                {
+                    "success": False,
+                    "message": "Database connection failed",
+                    "schedule": {},
+                }
+            )
+
+        # Get schedule data using fixed method
+        schedule = AdminScheduleService.get_schedule_data(
+            start_date, end_date, sport_filter
+        )
+
+        # Count total slots in response
+        total_slots = 0
+        for date in schedule:
+            for court in schedule[date]:
+                total_slots += len(schedule[date][court])
+
+        logger.info(
+            f"📈 FIXED: Schedule API returning {len(schedule)} days with {total_slots} total scheduled slots"
+        )
+
+        # Debug: Log a sample of the schedule data
+        if schedule:
+            sample_date = list(schedule.keys())[0]
+            sample_courts = list(schedule[sample_date].keys())[:2]  # First 2 courts
+            logger.info(f"🔍 Sample schedule data for {sample_date}:")
+            for court in sample_courts:
+                court_slots = schedule[sample_date][court]
+                logger.info(
+                    f"  Court {court}: {len(court_slots)} slots - {list(court_slots.keys())[:3]}"
+                )
+
+        return jsonify(
+            {
+                "success": True,
+                "schedule": schedule,
+                "debug_info": {
+                    "total_days": len(schedule),
+                    "total_slots": total_slots,
+                    "total_bookings_in_range": total_bookings,
+                    "sport_filter": sport_filter,
+                    "date_range": f"{start_date} to {end_date}",
+                },
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"❌ FIXED: Schedule API error: {e}")
+        import traceback
+
+        logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+
+        return jsonify(
+            {
+                "success": True,  # Return success=True to prevent UI errors
+                "schedule": {},
+                "message": f"Error loading schedule: {str(e)}",
+                "debug_info": {
+                    "error": str(e),
+                    "date_range": f"{data.get('startDate', 'unknown')} to {data.get('endDate', 'unknown')}",
+                    "sport_filter": data.get("sport", "all"),
+                },
+            }
+        )
 
 
 class AdminBookingService:
@@ -986,42 +1256,6 @@ def api_dashboard_stats():
     except Exception as e:
         logger.error(f"Dashboard stats error: {e}")
         return jsonify({"success": False, "message": str(e)})
-
-
-@admin_bp.route("/api/schedule-data", methods=["POST"])
-@admin_required
-def api_schedule_data():
-    """Get schedule data for date range"""
-    try:
-        data = request.json
-        start_date = data.get("startDate")
-        end_date = data.get("endDate")
-        sport_filter = data.get("sport")
-
-        logger.info(
-            f"Schedule API called with: {start_date} to {end_date}, sport: {sport_filter}"
-        )
-
-        schedule = AdminScheduleService.get_schedule_data(
-            start_date, end_date, sport_filter
-        )
-
-        logger.info(f"Schedule API returning {len(schedule)} days of data")
-
-        return jsonify({"success": True, "schedule": schedule})
-
-    except Exception as e:
-        logger.error(f"Schedule API error: {e}")
-        import traceback
-
-        traceback.print_exc()
-        return jsonify(
-            {
-                "success": True,
-                "schedule": {},
-                "message": f"Error loading schedule: {str(e)}",
-            }
-        )
 
 
 @admin_bp.route("/api/admin-create-booking", methods=["POST"])

@@ -1,3 +1,4 @@
+import traceback
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import os
 from datetime import datetime, timedelta
@@ -576,6 +577,197 @@ def test_db_customer():
         return jsonify(
             {"success": False, "error": str(e), "message": "Database connection failed"}
         )
+
+
+@app.route("/debug/check-bookings")
+def debug_check_bookings():
+    """Debug endpoint to check booking data in database"""
+    try:
+        # Get today's date
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        # Query all bookings for today
+        query = """
+            SELECT 
+                id, sport, court, court_name, booking_date, start_time, end_time,
+                duration, selected_slots, player_name, player_phone, 
+                total_amount, status, created_at
+            FROM bookings 
+            WHERE booking_date = %s
+            ORDER BY court, start_time
+        """
+
+        bookings = DatabaseManager.execute_query(query, (today,))
+
+        debug_info = {
+            "date_checked": today,
+            "total_bookings": len(bookings) if bookings else 0,
+            "bookings": [],
+        }
+
+        if bookings:
+            for booking in bookings:
+                booking_dict = dict(booking)
+
+                # Parse selected_slots if it's a JSON string
+                selected_slots = booking_dict.get("selected_slots")
+                if isinstance(selected_slots, str):
+                    try:
+                        selected_slots = json.loads(selected_slots)
+                    except:
+                        selected_slots = "Invalid JSON"
+
+                debug_booking = {
+                    "id": booking_dict.get("id"),
+                    "sport": booking_dict.get("sport"),
+                    "court": booking_dict.get("court"),
+                    "court_name": booking_dict.get("court_name"),
+                    "player_name": booking_dict.get("player_name"),
+                    "booking_date": str(booking_dict.get("booking_date")),
+                    "start_time": str(booking_dict.get("start_time")),
+                    "end_time": str(booking_dict.get("end_time")),
+                    "duration": booking_dict.get("duration"),
+                    "status": booking_dict.get("status"),
+                    "total_amount": booking_dict.get("total_amount"),
+                    "selected_slots": selected_slots,
+                    "selected_slots_count": (
+                        len(selected_slots) if isinstance(selected_slots, list) else 0
+                    ),
+                    "created_at": str(booking_dict.get("created_at")),
+                }
+
+                debug_info["bookings"].append(debug_booking)
+
+        # Also check pickleball specific bookings
+        pickleball_query = """
+            SELECT id, court, booking_date, start_time, player_name, status, selected_slots
+            FROM bookings 
+            WHERE sport = 'pickleball' 
+            AND booking_date >= CURRENT_DATE - INTERVAL '7 days'
+            ORDER BY booking_date DESC, start_time
+        """
+
+        pickleball_bookings = DatabaseManager.execute_query(pickleball_query, (today,))
+        debug_info["pickleball_bookings"] = []
+
+        if pickleball_bookings:
+            for booking in pickleball_bookings:
+                booking_dict = dict(booking)
+                selected_slots = booking_dict.get("selected_slots")
+                if isinstance(selected_slots, str):
+                    try:
+                        selected_slots = json.loads(selected_slots)
+                    except:
+                        selected_slots = "Invalid JSON"
+
+                debug_info["pickleball_bookings"].append(
+                    {
+                        "id": booking_dict.get("id"),
+                        "court": booking_dict.get("court"),
+                        "booking_date": str(booking_dict.get("booking_date")),
+                        "start_time": str(booking_dict.get("start_time")),
+                        "player_name": booking_dict.get("player_name"),
+                        "status": booking_dict.get("status"),
+                        "slots": selected_slots,
+                    }
+                )
+
+        return jsonify(debug_info)
+
+    except Exception as e:
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()})
+
+
+@app.route("/debug/test-schedule-api")
+def debug_test_schedule_api():
+    """Test the schedule API with today's data"""
+    try:
+        today = datetime.now().strftime("%Y-%m-%d")
+
+        # Simulate the schedule API call
+        from admin_routes import AdminScheduleService
+
+        schedule_data = AdminScheduleService.get_schedule_data(today, today, None)
+
+        debug_info = {
+            "date_tested": today,
+            "schedule_data": schedule_data,
+            "courts_with_bookings": {},
+            "total_slots_found": 0,
+        }
+
+        # Count slots per court
+        if schedule_data and today in schedule_data:
+            for court_id, court_slots in schedule_data[today].items():
+                slot_count = len(court_slots)
+                debug_info["courts_with_bookings"][court_id] = {
+                    "slot_count": slot_count,
+                    "slots": court_slots,
+                }
+                debug_info["total_slots_found"] += slot_count
+
+        return jsonify(debug_info)
+
+    except Exception as e:
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()})
+
+
+@app.route("/debug/raw-database-check")
+def debug_raw_database_check():
+    """Direct database check for the pickleball booking"""
+    try:
+        # Check for any bookings with time slots that include 8:00 AM
+        query = """
+            SELECT 
+                id, sport, court, booking_date, start_time, end_time,
+                selected_slots, player_name, status, created_at
+            FROM bookings 
+            WHERE selected_slots::text LIKE '%"time": "08:00"%' 
+            OR selected_slots::text LIKE '%"time": "8:00"%'
+            OR start_time = '08:00:00'
+            OR start_time = '8:00:00'
+            ORDER BY created_at DESC
+        """
+
+        bookings = DatabaseManager.execute_query(query)
+
+        debug_info = {
+            "query_used": query,
+            "bookings_found": len(bookings) if bookings else 0,
+            "bookings": [],
+        }
+
+        if bookings:
+            for booking in bookings:
+                booking_dict = dict(booking)
+
+                # Parse selected_slots
+                selected_slots = booking_dict.get("selected_slots")
+                if isinstance(selected_slots, str):
+                    try:
+                        selected_slots = json.loads(selected_slots)
+                    except:
+                        selected_slots = str(selected_slots)
+
+                debug_info["bookings"].append(
+                    {
+                        "id": booking_dict.get("id"),
+                        "sport": booking_dict.get("sport"),
+                        "court": booking_dict.get("court"),
+                        "booking_date": str(booking_dict.get("booking_date")),
+                        "start_time": str(booking_dict.get("start_time")),
+                        "end_time": str(booking_dict.get("end_time")),
+                        "player_name": booking_dict.get("player_name"),
+                        "status": booking_dict.get("status"),
+                        "selected_slots": selected_slots,
+                        "created_at": str(booking_dict.get("created_at")),
+                    }
+                )
+
+        return jsonify(debug_info)
+
+    except Exception as e:
+        return jsonify({"error": str(e), "traceback": traceback.format_exc()})
 
 
 if __name__ == "__main__":
