@@ -1,4 +1,3 @@
-<!-- admin_dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Header -->
     <header class="admin-header">
         <div class="admin-container">
             <h1 class="admin-title">
@@ -20,9 +20,9 @@
                 <a href="{{ url_for('index') }}" class="nav-link">
                     <i class="fas fa-home"></i> Website
                 </a>
-                <a href="#" class="nav-link" onclick="logout()">
+                <button id="logout-btn" class="nav-link" style="background: none; border: none; color: white; cursor: pointer;">
                     <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
+                </button>
             </div>
         </div>
     </header>
@@ -35,7 +35,7 @@
                     <i class="fas fa-calendar-check"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ bookings|length }}</div>
+                    <div class="stat-number" data-stat="total-bookings">{{ stats.total_bookings or 0 }}</div>
                     <div class="stat-label">Total Bookings</div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }}</div>
+                    <div class="stat-number" data-stat="pending-payment">{{ stats.pending_payment or 0 }}</div>
                     <div class="stat-label">Pending Payment</div>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</div>
+                    <div class="stat-number" data-stat="confirmed">{{ stats.confirmed or 0 }}</div>
                     <div class="stat-label">Confirmed</div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                     <i class="fas fa-times-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'cancelled')|list|length }}</div>
+                    <div class="stat-number" data-stat="cancelled">{{ stats.cancelled or 0 }}</div>
                     <div class="stat-label">Cancelled</div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                     <i class="fas fa-rupee-sign"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-number">PKR {{ (bookings|selectattr('status', 'equalto', 'confirmed')|sum(attribute='totalAmount'))|int|string }}</div>
+                    <div class="stat-number" data-stat="revenue">PKR {{ "{:,}".format(stats.revenue or 0) }}</div>
                     <div class="stat-label">Total Revenue</div>
                 </div>
             </div>
@@ -83,7 +83,8 @@
 
         <!-- Management Cards -->
         <div class="management-grid">
-            <div class="management-card" data-url="/admin/bookings">
+            <!-- FIXED: Correct URL for booking management -->
+            <div class="management-card" data-url="{{ url_for('admin_panel.admin_bookings') }}">
                 <div class="card-icon">
                     <i class="fas fa-list-alt"></i>
                 </div>
@@ -91,7 +92,7 @@
                     <h3>Booking Management</h3>
                     <p>View, confirm, or decline booking requests</p>
                     <div class="card-stats">
-                        <span class="pending-count">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }} pending</span>
+                        <span class="pending-count">{{ stats.pending_payment or 0 }} pending</span>
                     </div>
                 </div>
                 <div class="card-arrow">
@@ -131,7 +132,7 @@
                 </div>
             </div>
 
-            <div class="management-card reports-card" onclick="generateReports()">
+            <div class="management-card reports-card" id="reports-btn">
                 <div class="card-icon">
                     <i class="fas fa-chart-bar"></i>
                 </div>
@@ -152,19 +153,19 @@
         <div class="quick-actions">
             <h2>Quick Actions</h2>
             <div class="actions-grid">
-                <button class="action-btn primary" onclick="createQuickBooking()">
+                <button class="action-btn primary" id="quick-book-btn">
                     <i class="fas fa-plus"></i>
                     Quick Booking
                 </button>
-                <button class="action-btn secondary" onclick="viewTodaySchedule()">
+                <button class="action-btn secondary" id="today-schedule-btn">
                     <i class="fas fa-calendar-day"></i>
                     Today's Schedule
                 </button>
-                <button class="action-btn tertiary" onclick="exportData()">
+                <button class="action-btn tertiary" id="export-data-btn">
                     <i class="fas fa-download"></i>
                     Export Data
                 </button>
-                <button class="action-btn quaternary" onclick="sendBulkNotifications()">
+                <button class="action-btn quaternary" id="bulk-notify-btn">
                     <i class="fas fa-envelope"></i>
                     Send Notifications
                 </button>
@@ -175,43 +176,194 @@
         <div class="recent-activity">
             <h2>Recent Activity</h2>
             <div class="activity-list">
-                {% for booking in bookings[:5] %}
-                <div class="activity-item">
-                    <div class="activity-icon status-{{ booking.status.replace('_', '-') }}">
-                        {% if booking.status == 'pending_payment' %}
-                            <i class="fas fa-clock"></i>
-                        {% elif booking.status == 'confirmed' %}
-                            <i class="fas fa-check"></i>
-                        {% elif booking.status == 'cancelled' %}
-                            <i class="fas fa-times"></i>
-                        {% endif %}
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">
-                            {{ booking.playerName }} - {{ booking.sport.title() }}
-                        </div>
-                        <div class="activity-details">
-                            {{ booking.courtName }} • {{ booking.formatted_time|safe }} • PKR {{ booking.totalAmount }}
-                        </div>
-                        <div class="activity-time">{{ booking.createdDateTime }}</div>
-                    </div>
-                    <div class="activity-status">
-                        <span class="status-badge status-{{ booking.status.replace('_', '-') }}">
+                {% if bookings %}
+                    {% for booking in bookings[:5] %}
+                    <div class="activity-item">
+                        <div class="activity-icon status-{{ booking.status.replace('_', '-') }}">
                             {% if booking.status == 'pending_payment' %}
-                                Pending
+                                <i class="fas fa-clock"></i>
                             {% elif booking.status == 'confirmed' %}
-                                Confirmed
+                                <i class="fas fa-check"></i>
                             {% elif booking.status == 'cancelled' %}
-                                Cancelled
+                                <i class="fas fa-times"></i>
                             {% endif %}
-                        </span>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">
+                                {{ booking.player_name }} - {{ booking.sport.title() }}
+                            </div>
+                            <div class="activity-details">
+                                {{ booking.court_name }} • {{ booking.formatted_time|safe }} • PKR {{ "{:,}".format(booking.total_amount or 0) }}
+                            </div>
+                            <div class="activity-time">{{ booking.createdDateTime or 'N/A' }}</div>
+                        </div>
+                        <div class="activity-status">
+                            <span class="status-badge status-{{ booking.status.replace('_', '-') }}">
+                                {% if booking.status == 'pending_payment' %}
+                                    Pending
+                                {% elif booking.status == 'confirmed' %}
+                                    Confirmed
+                                {% elif booking.status == 'cancelled' %}
+                                    Cancelled
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-activity">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No recent activity found</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if bookings|length > 5 %}
+            <div class="view-all-activity">
+                <a href="{{ url_for('admin_panel.admin_bookings') }}" class="btn btn-outline">
+                    <i class="fas fa-list"></i> View All Bookings
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- System Status -->
+        <div class="system-status">
+            <h2>System Status</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-content">
+                        <div class="status-title">Database</div>
+                        <div class="status-subtitle">Connected</div>
                     </div>
                 </div>
-                {% endfor %}
+                <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-content">
+                        <div class="status-title">Booking System</div>
+                        <div class="status-subtitle">Online</div>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator online"></div>
+                    <div class="status-content">
+                        <div class="status-title">Payment Gateway</div>
+                        <div class="status-subtitle">Active</div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- Last refresh indicator - FIXED: No moment.js dependency -->
+        <div class="refresh-indicator">
+            <small id="last-refresh-time">Dashboard loaded successfully</small>
+        </div>
+    </div>
+
+    <!-- Loading indicator for dashboard updates -->
+    <div id="dashboard-loading" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Updating dashboard...</span>
         </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+    <script>
+        // Add some inline scripts for immediate functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Admin Dashboard loaded successfully');
+
+            // Update last refresh time with current time
+            const refreshTimeEl = document.getElementById('last-refresh-time');
+            if (refreshTimeEl) {
+                const now = new Date();
+                refreshTimeEl.textContent = `Last updated: ${now.toLocaleString()}`;
+            }
+
+            // Logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.location.href = '{{ url_for("admin_panel.admin_logout") }}';
+                    }
+                });
+            }
+
+            // Add click handlers for management cards
+            document.querySelectorAll('.management-card[data-url]').forEach(card => {
+                card.addEventListener('click', function() {
+                    const url = this.dataset.url;
+                    if (url) {
+                        console.log(`🔗 Navigating to: ${url}`);
+                        window.location.href = url;
+                    }
+                });
+                
+                // Add hover effects
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                    this.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Add loading states for buttons
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const icon = this.querySelector('i');
+                    if (icon && !icon.classList.contains('fa-spin')) {
+                        icon.classList.add('fa-spin');
+                        setTimeout(() => {
+                            icon.classList.remove('fa-spin');
+                        }, 2000);
+                    }
+                });
+            });
+
+            // Quick action handlers
+            const quickBookBtn = document.getElementById('quick-book-btn');
+            if (quickBookBtn) {
+                quickBookBtn.addEventListener('click', function() {
+                    window.location.href = '{{ url_for("admin_panel.admin_booking_control") }}';
+                });
+            }
+
+            const todayScheduleBtn = document.getElementById('today-schedule-btn');
+            if (todayScheduleBtn) {
+                todayScheduleBtn.addEventListener('click', function() {
+                    const today = new Date().toISOString().split('T')[0];
+                    window.location.href = `{{ url_for("admin_panel.admin_schedule") }}?date=${today}`;
+                });
+            }
+
+            const exportBtn = document.getElementById('export-data-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    alert('Export feature will be available soon!');
+                });
+            }
+
+            const bulkNotifyBtn = document.getElementById('bulk-notify-btn');
+            if (bulkNotifyBtn) {
+                bulkNotifyBtn.addEventListener('click', function() {
+                    alert('Bulk notification feature will be available soon!');
+                });
+            }
+
+            const reportsBtn = document.getElementById('reports-btn');
+            if (reportsBtn) {
+                reportsBtn.addEventListener('click', function() {
+                    alert('Advanced reports feature coming soon!');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

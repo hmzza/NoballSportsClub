@@ -1,4 +1,3 @@
-<!-- admin_bookings.html - Enhanced with new admin features -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,397 +8,438 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_bookings.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Enhanced header with navigation */
+        /* Inline styles to ensure it works */
         .admin-header {
-            background: linear-gradient(135deg, var(--royal-green), #1a5f3f);
+            background: linear-gradient(135deg, #2c5f3f, #1a5f3f);
             color: white;
             padding: 1.5rem 0;
-            margin-top: 0;
-        }
-        
-        .admin-nav-bar {
-            background: rgba(255,255,255,0.1);
-            padding: 1rem 0;
             margin-bottom: 2rem;
         }
         
-        .admin-nav {
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .admin-title {
             display: flex;
-            justify-content: center;
+            align-items: center;
             gap: 1rem;
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+        
+        .bookings-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .bookings-table th,
+        .bookings-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .bookings-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .bookings-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending-payment {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin: 0.25rem;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .confirm-btn {
+            background: #28a745;
+            color: white;
+        }
+        
+        .confirm-btn:hover {
+            background: #218838;
+            color: white;
+        }
+        
+        .decline-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .decline-btn:hover {
+            background: #c82333;
+            color: white;
+        }
+        
+        .no-bookings {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .booking-actions {
+            display: flex;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
         
-        .nav-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: 2px solid transparent;
+        .special-requests-row {
+            background: #f8f9fa !important;
         }
         
-        .nav-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-            color: white;
-        }
-        
-        .nav-btn.active {
-            background: white;
-            color: var(--royal-green);
-            border-color: white;
-        }
-        
-        .quick-stats {
+        .stats-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
         
-        .quick-stat {
+        .stat-card {
             background: white;
-            padding: 1rem;
+            padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             text-align: center;
-            transition: transform 0.3s ease;
         }
         
-        .quick-stat:hover {
-            transform: translateY(-2px);
-        }
-        
-        .quick-stat-number {
-            font-size: 1.5rem;
+        .stat-number {
+            font-size: 2rem;
             font-weight: bold;
-            color: var(--royal-green);
+            color: #2c5f3f;
         }
         
-        .quick-stat-label {
-            font-size: 0.8rem;
-            color: var(--light-text);
-            margin-top: 0.25rem;
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
         }
         
         @media (max-width: 768px) {
-            .admin-nav {
-                flex-direction: column;
-                align-items: center;
+            .bookings-table {
+                font-size: 0.8rem;
             }
             
-            .nav-btn {
-                width: 100%;
-                max-width: 250px;
-                justify-content: center;
+            .bookings-table th,
+            .bookings-table td {
+                padding: 0.5rem;
+            }
+            
+            .booking-actions {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <header class="admin-header">
         <div class="admin-container">
-            <h1 class="admin-title">
-                <i class="fas fa-tachometer-alt"></i>
-                Booking Management System
-            </h1>
-        </div>
-        
-        <!-- Enhanced Navigation -->
-        <div class="admin-nav-bar">
-            <div class="admin-container">
-                <nav class="admin-nav">
-                    <a href="/admin/bookings" class="nav-btn active">
-                        <i class="fas fa-list-alt"></i>
-                        Booking List
-                    </a>
-                    <a href="/admin/dashboard" class="nav-btn">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Dashboard
-                    </a>
-                    <a href="/admin/schedule" class="nav-btn">
-                        <i class="fas fa-calendar-alt"></i>
-                        Schedule View
-                    </a>
-                    <a href="/admin/booking-control" class="nav-btn">
-                        <i class="fas fa-cogs"></i>
-                        Booking Control
-                    </a>
-                    <a href="{{ url_for('index') }}" class="nav-btn">
-                        <i class="fas fa-home"></i>
-                        Website
-                    </a>
-                </nav>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 class="admin-title">
+                    <i class="fas fa-list-alt"></i>
+                    Booking Management
+                </h1>
+                <a href="{{ url_for('admin_panel.admin_dashboard') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
             </div>
         </div>
     </header>
 
     <div class="admin-container">
-        <!-- Quick Stats -->
-        <div class="quick-stats">
-            <div class="quick-stat">
-                <div class="quick-stat-number">{{ bookings|length }}</div>
-                <div class="quick-stat-label">Total Bookings</div>
+        <!-- Error Display -->
+        {% if error %}
+        <div class="error-message">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Stats Summary -->
+        <div class="stats-summary">
+            <div class="stat-card">
+                <div class="stat-number">{{ bookings|length }}</div>
+                <div class="stat-label">Total Bookings</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-number">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }}</div>
-                <div class="quick-stat-label">Pending</div>
+            <div class="stat-card">
+                <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'pending_payment')|list|length }}</div>
+                <div class="stat-label">Pending Payment</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-number">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</div>
-                <div class="quick-stat-label">Confirmed</div>
+            <div class="stat-card">
+                <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'confirmed')|list|length }}</div>
+                <div class="stat-label">Confirmed</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-number">{{ bookings|selectattr('status', 'equalto', 'cancelled')|list|length }}</div>
-                <div class="quick-stat-label">Cancelled</div>
-            </div>
-            <div class="quick-stat">
-                <div class="quick-stat-number">PKR {{ (bookings|selectattr('status', 'equalto', 'confirmed')|sum(attribute='totalAmount'))|int|string }}</div>
-                <div class="quick-stat-label">Revenue</div>
+            <div class="stat-card">
+                <div class="stat-number">{{ bookings|selectattr('status', 'equalto', 'cancelled')|list|length }}</div>
+                <div class="stat-label">Cancelled</div>
             </div>
         </div>
 
-        <!-- Feature Cards -->
-        <div class="stats-grid" style="margin-bottom: 2rem;">
-            <div class="stat-card" style="cursor: pointer; transition: transform 0.3s ease;" onclick="window.location.href='/admin/dashboard'">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--royal-green), #1a5f3f); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                        <i class="fas fa-tachometer-alt"></i>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--dark-text);">Enhanced Dashboard</div>
-                        <div style="color: var(--light-text); font-size: 0.9rem;">Modern analytics & quick actions</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card" style="cursor: pointer; transition: transform 0.3s ease;" onclick="window.location.href='/admin/schedule'">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #3498db, #2980b9); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--dark-text);">Schedule View</div>
-                        <div style="color: var(--light-text); font-size: 0.9rem;">Visual timeline like Google Sheets</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card" style="cursor: pointer; transition: transform 0.3s ease;" onclick="window.location.href='/admin/booking-control'">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #9b59b6, #8e44ad); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                        <i class="fas fa-cogs"></i>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.2rem; font-weight: 700; color: var(--dark-text);">Booking Control</div>
-                        <div style="color: var(--light-text); font-size: 0.9rem;">Create, search & manage bookings</div>
-                    </div>
-                </div>
-            </div>
+        <!-- Debug Info (Remove in production) -->
+        <div style="background: #e9ecef; padding: 1rem; border-radius: 5px; margin-bottom: 1rem; font-family: monospace; font-size: 0.8rem;">
+            <strong>Debug Info:</strong><br>
+            Total bookings found: {{ bookings|length }}<br>
+            Template loaded at: <span id="load-time"></span>
         </div>
 
-        <!-- Existing Filter Controls -->
-        <div class="filter-controls">
-            <select class="filter-select" id="status-filter">
-                <option value="">All Statuses</option>
-                <option value="pending_payment">Pending Payment</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
-            <select class="filter-select" id="sport-filter">
-                <option value="">All Sports</option>
-                <option value="padel">Padel</option>
-                <option value="cricket">Cricket</option>
-                <option value="futsal">Futsal</option>
-                <option value="pickleball">Pickleball</option>
-            </select>
-            <input type="date" class="filter-select" id="date-filter" placeholder="Filter by date">
-        </div>
-
-        <!-- Existing Bookings Table -->
+        <!-- Bookings Table -->
         {% if bookings %}
-            <table class="bookings-table" id="bookings-table">
-                <thead>
-                    <tr>
-                        <th>Booking ID</th>
-                        <th>Date & Time</th>
-                        <th>Sport & Court</th>
-                        <th>Player Details</th>
-                        <th>Payment</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in bookings %}
-                    <tr data-status="{{ booking.status }}" data-sport="{{ booking.sport }}" data-date="{{ booking.display_date }}">
-                        <td data-label="Booking ID">
-                            <strong>{{ booking.id }}</strong>
-                            <div class="booking-date">
-                                Created: {{ booking.createdDateTime }}
-                            </div>
-                        </td>
-                        <td data-label="Date & Time">
-                            <div class="booking-date" style="line-height: 1.4;">{{ booking.formatted_time|safe }}</div>
-                            <div class="booking-date" style="font-size: 0.8rem; color: #666; margin-top: 4px;">
-                                Duration: {{ booking.duration }}h
-                            </div>
-                        </td>
-                        <td data-label="Sport & Court">
-                            <strong>{{ booking.sport.title() }}</strong><br>
-                            <div class="court-info">{{ booking.courtName }}</div>
-                        </td>
-                        <td data-label="Player Details">
-                            <div class="player-info">{{ booking.playerName }}</div>
-                            <div class="booking-date">{{ booking.playerPhone }}</div>
-                            {% if booking.playerEmail %}
-                                <div class="booking-date">{{ booking.playerEmail }}</div>
-                            {% endif %}
-                            <div class="booking-date">{{ booking.playerCount }} players</div>
-                        </td>
-                        <td data-label="Payment">
-                            <div class="payment-info">
-                                <strong>PKR {{ booking.totalAmount }}</strong><br>
-                                <span class="booking-date">
-                                    {{ booking.paymentType == 'advance' and '50% Advance' or 'Full Payment' }}
-                                </span>
-                            </div>
-                        </td>
-                        <td data-label="Status">
-                            <span class="booking-status status-{{ booking.status.replace('_', '-') }}">
-                                {% if booking.status == 'pending_payment' %}
-                                    Pending Payment
-                                {% elif booking.status == 'confirmed' %}
-                                    Confirmed
-                                {% elif booking.status == 'cancelled' %}
-                                    Cancelled
-                                {% endif %}
-                            </span>
-                        </td>
-                        <td data-label="Actions">
-                            {% if booking.status == 'pending_payment' %}
-                                <div class="booking-actions">
-                                    <a href="{{ url_for('confirm_booking', booking_id=booking.id) }}" 
-                                       class="action-btn confirm-btn"
-                                       onclick="return confirm('Confirm this booking? This will mark the slot as occupied.')">
-                                        ✓ Confirm
-                                    </a>
-                                    <a href="{{ url_for('decline_booking', booking_id=booking.id) }}" 
-                                       class="action-btn decline-btn"
-                                       onclick="return confirm('Decline this booking? This will free up the time slot.')">
-                                        ✗ Decline
-                                    </a>
+            <div class="bookings-table-container">
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Date & Time</th>
+                            <th>Sport & Court</th>
+                            <th>Player Details</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td>
+                                <strong>{{ booking.id or booking.get('id', 'N/A') }}</strong>
+                                <div style="font-size: 0.8rem; color: #666;">
+                                    Created: {{ booking.createdDateTime or booking.get('createdDateTime', 'N/A') }}
                                 </div>
-                            {% elif booking.status == 'confirmed' %}
-                                <span class="booking-date">
-                                    {% if booking.confirmedDateTime %}
-                                        ✅ {{ booking.confirmedDateTime }}
+                            </td>
+                            <td>
+                                <div style="line-height: 1.4;">
+                                    {% if booking.formatted_time %}
+                                        {{ booking.formatted_time|safe }}
                                     {% else %}
+                                        {{ booking.booking_date or booking.get('booking_date', 'N/A') }}<br>
+                                        {{ booking.start_time or booking.get('start_time', 'N/A') }} - 
+                                        {{ booking.end_time or booking.get('end_time', 'N/A') }}
+                                    {% endif %}
+                                </div>
+                                <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
+                                    Duration: {{ booking.duration or booking.get('duration', 'N/A') }}h
+                                </div>
+                            </td>
+                            <td>
+                                <strong>{{ (booking.sport or booking.get('sport', 'N/A'))|title }}</strong><br>
+                                <div style="color: #666; font-size: 0.9rem;">
+                                    {{ booking.courtName or booking.court_name or booking.get('court_name', booking.court or booking.get('court', 'N/A')) }}
+                                </div>
+                            </td>
+                            <td>
+                                <div><strong>{{ booking.playerName or booking.player_name or booking.get('player_name', 'N/A') }}</strong></div>
+                                <div style="color: #666; font-size: 0.9rem;">{{ booking.playerPhone or booking.player_phone or booking.get('player_phone', 'N/A') }}</div>
+                                {% if booking.playerEmail or booking.player_email or booking.get('player_email') %}
+                                    <div style="color: #666; font-size: 0.9rem;">{{ booking.playerEmail or booking.player_email or booking.get('player_email') }}</div>
+                                {% endif %}
+                                <div style="color: #666; font-size: 0.9rem;">{{ booking.playerCount or booking.player_count or booking.get('player_count', '2') }} players</div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>PKR {{ "{:,}".format(booking.totalAmount or booking.total_amount or booking.get('total_amount', 0)) }}</strong><br>
+                                    <span style="color: #666; font-size: 0.9rem;">
+                                        {% if (booking.paymentType or booking.payment_type or booking.get('payment_type', 'advance')) == 'advance' %}
+                                            50% Advance
+                                        {% else %}
+                                            Full Payment
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                {% set status = booking.status or booking.get('status', 'unknown') %}
+                                <span class="status-badge status-{{ status.replace('_', '-') }}">
+                                    {% if status == 'pending_payment' %}
+                                        Pending Payment
+                                    {% elif status == 'confirmed' %}
                                         Confirmed
-                                    {% endif %}
-                                </span>
-                            {% elif booking.status == 'cancelled' %}
-                                <span class="booking-date">
-                                    {% if booking.cancelledDateTime %}
-                                        ❌ {{ booking.cancelledDateTime }}
-                                    {% else %}
+                                    {% elif status == 'cancelled' %}
                                         Cancelled
+                                    {% else %}
+                                        {{ status|title }}
                                     {% endif %}
                                 </span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% if booking.specialRequests %}
-                    <tr class="special-requests-row">
-                        <td colspan="7" style="background: #f8f9fa; font-style: italic; padding: 0.5rem 1rem;">
-                            <strong>Special Requests:</strong> {{ booking.specialRequests }}
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                            <td>
+                                {% set status = booking.status or booking.get('status', 'unknown') %}
+                                {% set booking_id = booking.id or booking.get('id') %}
+                                
+                                {% if status == 'pending_payment' %}
+                                    <div class="booking-actions">
+                                        <a href="/admin/confirm-booking/{{ booking_id }}" 
+                                           class="action-btn confirm-btn"
+                                           onclick="return confirm('Confirm this booking? This will mark the slot as occupied.')">
+                                            <i class="fas fa-check"></i> Confirm
+                                        </a>
+                                        <a href="/admin/decline-booking/{{ booking_id }}" 
+                                           class="action-btn decline-btn"
+                                           onclick="return confirm('Decline this booking? This will free up the time slot.')">
+                                            <i class="fas fa-times"></i> Decline
+                                        </a>
+                                    </div>
+                                {% elif status == 'confirmed' %}
+                                    <span style="color: #28a745; font-weight: 600;">
+                                        <i class="fas fa-check-circle"></i> 
+                                        {% if booking.confirmedDateTime or booking.get('confirmedDateTime') %}
+                                            Confirmed {{ booking.confirmedDateTime or booking.get('confirmedDateTime') }}
+                                        {% else %}
+                                            Confirmed
+                                        {% endif %}
+                                    </span>
+                                {% elif status == 'cancelled' %}
+                                    <span style="color: #dc3545; font-weight: 600;">
+                                        <i class="fas fa-times-circle"></i> 
+                                        {% if booking.cancelledDateTime or booking.get('cancelledDateTime') %}
+                                            Cancelled {{ booking.cancelledDateTime or booking.get('cancelledDateTime') }}
+                                        {% else %}
+                                            Cancelled
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        
+                        <!-- Special Requests Row -->
+                        {% set special_requests = booking.specialRequests or booking.special_requests or booking.get('special_requests') %}
+                        {% if special_requests %}
+                        <tr class="special-requests-row">
+                            <td colspan="7" style="font-style: italic; padding: 0.5rem 1rem;">
+                                <strong><i class="fas fa-comment"></i> Special Requests:</strong> {{ special_requests }}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% else %}
             <div class="no-bookings">
-                <h3>No bookings yet</h3>
-                <p>Booking requests will appear here when users submit them.</p>
+                <i class="fas fa-calendar-times" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <h3>No bookings found</h3>
+                <p>Booking requests will appear here when customers submit them.</p>
                 <div style="margin-top: 2rem;">
-                    <a href="/admin/booking-control" class="action-btn confirm-btn">
+                    <a href="{{ url_for('admin_panel.admin_booking_control') }}" class="action-btn confirm-btn">
                         <i class="fas fa-plus"></i> Create New Booking
                     </a>
+                    <button onclick="window.location.reload()" class="action-btn" style="background: #17a2b8; color: white;">
+                        <i class="fas fa-refresh"></i> Refresh Page
+                    </button>
                 </div>
             </div>
         {% endif %}
+
+        <!-- Navigation Links -->
+        <div style="margin-top: 2rem; text-align: center;">
+            <a href="{{ url_for('admin_panel.admin_dashboard') }}" class="action-btn" style="background: #6c757d; color: white;">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin_panel.admin_schedule') }}" class="action-btn" style="background: #17a2b8; color: white;">
+                <i class="fas fa-calendar-alt"></i> Schedule View
+            </a>
+            <a href="{{ url_for('admin_panel.admin_booking_control') }}" class="action-btn" style="background: #6f42c1; color: white;">
+                <i class="fas fa-cogs"></i> Booking Control
+            </a>
+        </div>
     </div>
 
     <script>
-        // Enhanced filter functionality
-        document.getElementById('status-filter').addEventListener('change', filterTable);
-        document.getElementById('sport-filter').addEventListener('change', filterTable);
-        document.getElementById('date-filter').addEventListener('change', filterTable);
-
-        function filterTable() {
-            const statusFilter = document.getElementById('status-filter').value;
-            const sportFilter = document.getElementById('sport-filter').value;
-            const dateFilter = document.getElementById('date-filter').value;
-            
-            const rows = document.querySelectorAll('#bookings-table tbody tr');
-            
-            rows.forEach(row => {
-                if (row.classList.contains('special-requests-row')) {
-                    return; // Skip special request rows
-                }
-                
-                const status = row.dataset.status;
-                const sport = row.dataset.sport;
-                const date = row.dataset.date;
-                
-                let show = true;
-                
-                if (statusFilter && status !== statusFilter) show = false;
-                if (sportFilter && sport !== sportFilter) show = false;
-                if (dateFilter && date !== dateFilter) show = false;
-                
-                row.style.display = show ? '' : 'none';
-                
-                // Also hide/show associated special requests row
-                const nextRow = row.nextElementSibling;
-                if (nextRow && nextRow.classList.contains('special-requests-row')) {
-                    nextRow.style.display = show ? '' : 'none';
-                }
-            });
-        }
-
-        // Auto-refresh page every 30 seconds for new bookings
-        setInterval(() => {
+        // Set load time
+        document.getElementById('load-time').textContent = new Date().toLocaleString();
+        
+        // Auto-refresh every 30 seconds
+        let refreshInterval = setInterval(() => {
             if (document.visibilityState === 'visible') {
-                location.reload();
+                console.log('Auto-refreshing bookings...');
+                window.location.reload();
             }
         }, 30000);
-
+        
+        // Stop auto-refresh when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                clearInterval(refreshInterval);
+            } else {
+                refreshInterval = setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        window.location.reload();
+                    }
+                }, 30000);
+            }
+        });
+        
         // Highlight pending bookings
         document.querySelectorAll('.status-pending-payment').forEach(element => {
-            element.parentElement.parentElement.style.backgroundColor = '#fff3cd';
+            const row = element.closest('tr');
+            if (row) {
+                row.style.backgroundColor = '#fff3cd';
+                row.style.borderLeft = '4px solid #ffc107';
+            }
         });
-
-        // Add hover effects to stat cards
-        document.querySelectorAll('.stat-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-4px)';
-                this.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'var(--shadow)';
-            });
-        });
+        
+        console.log('✅ Admin Bookings page loaded successfully');
+        console.log('📊 Found {{ bookings|length }} bookings');
     </script>
 </body>
 </html>

@@ -454,9 +454,7 @@ class AdminBookingService:
             formatted_bookings = []
             for booking in bookings:
                 booking_dict = dict(booking)
-                formatted_booking = AdminBookingService._format_booking_for_frontend(
-                    booking_dict
-                )
+                formatted_booking = _format_booking_for_display(booking_dict)
                 formatted_bookings.append(formatted_booking)
 
             return formatted_bookings
@@ -464,83 +462,6 @@ class AdminBookingService:
         except Exception as e:
             logger.error(f"Error searching bookings: {e}")
             return []
-
-    @staticmethod
-    def _format_booking_for_frontend(booking):
-        """Format booking data for frontend display"""
-        try:
-            formatted = {
-                "id": booking.get("id"),
-                "sport": booking.get("sport"),
-                "court": booking.get("court"),
-                "courtName": booking.get("court_name"),
-                "playerName": booking.get("player_name"),
-                "playerPhone": booking.get("player_phone"),
-                "playerEmail": booking.get("player_email", ""),
-                "playerCount": booking.get("player_count", "2"),
-                "specialRequests": booking.get("special_requests", ""),
-                "totalAmount": booking.get("total_amount"),
-                "status": booking.get("status"),
-                "duration": booking.get("duration"),
-                "date": (
-                    booking.get("booking_date").strftime("%Y-%m-%d")
-                    if booking.get("booking_date")
-                    else None
-                ),
-                "startTime": (
-                    str(booking.get("start_time"))
-                    if booking.get("start_time")
-                    else None
-                ),
-                "endTime": (
-                    str(booking.get("end_time")) if booking.get("end_time") else None
-                ),
-                "formatted_time": AdminBookingService._format_booking_time(booking),
-            }
-            return formatted
-        except Exception as e:
-            logger.error(f"Error formatting booking: {e}")
-            return booking
-
-    @staticmethod
-    def _format_booking_time(booking):
-        """Format booking time for display"""
-        try:
-            booking_date = booking.get("booking_date")
-            start_time = booking.get("start_time")
-            end_time = booking.get("end_time")
-
-            if not all([booking_date, start_time, end_time]):
-                return "Time not available"
-
-            # Format date
-            if isinstance(booking_date, str):
-                date_obj = datetime.strptime(booking_date, "%Y-%m-%d")
-            else:
-                date_obj = booking_date
-
-            formatted_date = date_obj.strftime("%a, %b %d")
-
-            # Format times
-            def format_time_12hr(time_obj):
-                if isinstance(time_obj, str):
-                    time_obj = datetime.strptime(
-                        time_obj.split(".")[0], "%H:%M:%S"
-                    ).time()
-                hour = time_obj.hour
-                minute = time_obj.minute
-                ampm = "AM" if hour < 12 else "PM"
-                display_hour = 12 if hour == 0 else hour if hour <= 12 else hour - 12
-                return f"{display_hour}:{minute:02d} {ampm}"
-
-            start_12hr = format_time_12hr(start_time)
-            end_12hr = format_time_12hr(end_time)
-
-            return f'<div class="time-display">{formatted_date}</div><div style="font-weight: 600; color: #28a745;">{start_12hr} - {end_12hr}</div>'
-
-        except Exception as e:
-            logger.error(f"Error formatting booking time: {e}")
-            return f"{start_time} - {end_time}"
 
     # Utility methods
     @staticmethod
@@ -638,6 +559,89 @@ def admin_required(f):
     return decorated_function
 
 
+# Helper function for time formatting
+def _format_booking_time_display(booking_date, start_time, end_time):
+    """Helper function to format booking time for display"""
+    try:
+        if not all([booking_date, start_time, end_time]):
+            return "Time not available"
+
+        # Format date
+        if isinstance(booking_date, str):
+            date_obj = datetime.strptime(booking_date, "%Y-%m-%d")
+        else:
+            date_obj = booking_date
+
+        formatted_date = date_obj.strftime("%a, %b %d")
+
+        # Format times to 12-hour format
+        def format_time_12hr(time_obj):
+            if isinstance(time_obj, str):
+                # Handle different time formats
+                if "." in time_obj:
+                    time_obj = time_obj.split(".")[0]
+                if len(time_obj.split(":")) == 3:
+                    time_obj = datetime.strptime(time_obj, "%H:%M:%S").time()
+                else:
+                    time_obj = datetime.strptime(time_obj, "%H:%M").time()
+
+            hour = time_obj.hour
+            minute = time_obj.minute
+            ampm = "AM" if hour < 12 else "PM"
+            display_hour = 12 if hour == 0 else hour if hour <= 12 else hour - 12
+            return f"{display_hour}:{minute:02d} {ampm}"
+
+        start_12hr = format_time_12hr(start_time)
+        end_12hr = format_time_12hr(end_time)
+
+        return f'<div class="time-display">{formatted_date}</div><div style="font-weight: 600; color: #28a745;">{start_12hr} - {end_12hr}</div>'
+
+    except Exception as e:
+        logger.error(f"Error formatting time display: {e}")
+        return f"{start_time} - {end_time}"
+
+
+def _format_booking_for_display(booking):
+    """Format booking data for display"""
+    try:
+        # Format dates and times
+        booking_date = booking.get("booking_date")
+        start_time = booking.get("start_time")
+        end_time = booking.get("end_time")
+        created_at = booking.get("created_at")
+
+        formatted_booking = dict(booking)
+
+        # Format display date
+        if booking_date:
+            if isinstance(booking_date, str):
+                date_obj = datetime.strptime(booking_date, "%Y-%m-%d")
+            else:
+                date_obj = booking_date
+            formatted_booking["display_date"] = date_obj.strftime("%Y-%m-%d")
+
+        # Format time display
+        formatted_booking["formatted_time"] = _format_booking_time_display(
+            booking_date, start_time, end_time
+        )
+
+        # Format created datetime
+        if created_at:
+            if isinstance(created_at, str):
+                created_obj = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+            else:
+                created_obj = created_at
+            formatted_booking["createdDateTime"] = created_obj.strftime(
+                "%b %d, %Y %I:%M %p"
+            )
+
+        return formatted_booking
+
+    except Exception as e:
+        logger.error(f"Error formatting booking: {e}")
+        return booking
+
+
 # Routes
 @admin_bp.route("/login", methods=["GET", "POST"])
 def admin_login():
@@ -681,31 +685,188 @@ def admin_dashboard():
         stats_result = AdminDatabaseManager.execute_query(stats_query, fetch_one=True)
         stats = dict(stats_result) if stats_result else {}
 
-        # Get recent bookings
+        # Get recent bookings for dashboard
         recent_query = """
-            SELECT * FROM bookings 
+            SELECT 
+                id, sport, court, court_name, booking_date, start_time, end_time,
+                duration, player_name, player_phone, total_amount, status, created_at
+            FROM bookings 
             ORDER BY created_at DESC 
             LIMIT 10
         """
 
-        recent_bookings = AdminDatabaseManager.execute_query(recent_query) or []
+        recent_bookings_raw = AdminDatabaseManager.execute_query(recent_query) or []
 
-        # Format bookings
-        formatted_bookings = []
-        for booking in recent_bookings:
+        # Format recent bookings
+        recent_bookings = []
+        for booking in recent_bookings_raw:
             booking_dict = dict(booking)
-            formatted_booking = AdminBookingService._format_booking_for_frontend(
-                booking_dict
+
+            # Format time display
+            booking_dict["formatted_time"] = _format_booking_time_display(
+                booking_dict.get("booking_date"),
+                booking_dict.get("start_time"),
+                booking_dict.get("end_time"),
             )
-            formatted_bookings.append(formatted_booking)
+
+            # Format created datetime
+            created_at = booking_dict.get("created_at")
+            if created_at:
+                if isinstance(created_at, str):
+                    created_obj = datetime.fromisoformat(
+                        created_at.replace("Z", "+00:00")
+                    )
+                else:
+                    created_obj = created_at
+                booking_dict["createdDateTime"] = created_obj.strftime(
+                    "%b %d, %Y %I:%M %p"
+                )
+
+            recent_bookings.append(booking_dict)
 
         return render_template(
-            "admin_dashboard.html", bookings=formatted_bookings, stats=stats
+            "admin_dashboard.html", bookings=recent_bookings, stats=stats
         )
 
     except Exception as e:
         logger.error(f"Dashboard error: {e}")
         return render_template("admin_dashboard.html", bookings=[], stats={})
+
+
+@admin_bp.route("/bookings")
+@admin_required
+def admin_bookings():
+    """Admin bookings management page with proper data formatting"""
+    try:
+        logger.info("Loading admin bookings page...")
+
+        # Direct query to get all bookings with proper formatting
+        query = """
+            SELECT 
+                id, sport, court, court_name, booking_date, start_time, end_time,
+                duration, selected_slots, player_name, player_phone, player_email,
+                player_count, special_requests, payment_type, total_amount, status,
+                payment_verified, created_at, confirmed_at, cancelled_at
+            FROM bookings 
+            ORDER BY created_at DESC
+        """
+
+        raw_bookings = AdminDatabaseManager.execute_query(query) or []
+        logger.info(f"Found {len(raw_bookings)} bookings in database")
+
+        # Format bookings for template
+        bookings = []
+        for booking in raw_bookings:
+            try:
+                booking_dict = dict(booking)
+
+                # Format the booking data properly
+                formatted_booking = {
+                    "id": booking_dict.get("id"),
+                    "sport": booking_dict.get("sport"),
+                    "court": booking_dict.get("court"),
+                    "courtName": booking_dict.get("court_name"),
+                    "court_name": booking_dict.get(
+                        "court_name"
+                    ),  # Both formats for compatibility
+                    "playerName": booking_dict.get("player_name"),
+                    "player_name": booking_dict.get("player_name"),  # Both formats
+                    "playerPhone": booking_dict.get("player_phone"),
+                    "player_phone": booking_dict.get("player_phone"),  # Both formats
+                    "playerEmail": booking_dict.get("player_email", ""),
+                    "player_email": booking_dict.get("player_email", ""),
+                    "playerCount": booking_dict.get("player_count", "2"),
+                    "player_count": booking_dict.get("player_count", "2"),
+                    "specialRequests": booking_dict.get("special_requests", ""),
+                    "special_requests": booking_dict.get("special_requests", ""),
+                    "paymentType": booking_dict.get("payment_type", "advance"),
+                    "payment_type": booking_dict.get("payment_type", "advance"),
+                    "totalAmount": booking_dict.get("total_amount", 0),
+                    "total_amount": booking_dict.get("total_amount", 0),
+                    "status": booking_dict.get("status"),
+                    "duration": booking_dict.get("duration"),
+                    "paymentVerified": booking_dict.get("payment_verified", False),
+                }
+
+                # Format dates and times
+                booking_date = booking_dict.get("booking_date")
+                start_time = booking_dict.get("start_time")
+                end_time = booking_dict.get("end_time")
+                created_at = booking_dict.get("created_at")
+                confirmed_at = booking_dict.get("confirmed_at")
+                cancelled_at = booking_dict.get("cancelled_at")
+
+                # Format display date
+                if booking_date:
+                    if isinstance(booking_date, str):
+                        date_obj = datetime.strptime(booking_date, "%Y-%m-%d")
+                    else:
+                        date_obj = booking_date
+                    formatted_booking["display_date"] = date_obj.strftime("%Y-%m-%d")
+                    formatted_booking["booking_date"] = date_obj.strftime("%Y-%m-%d")
+
+                # Format time display for template
+                formatted_booking["formatted_time"] = _format_booking_time_display(
+                    booking_date, start_time, end_time
+                )
+
+                # Format created datetime
+                if created_at:
+                    if isinstance(created_at, str):
+                        created_obj = datetime.fromisoformat(
+                            created_at.replace("Z", "+00:00")
+                        )
+                    else:
+                        created_obj = created_at
+                    formatted_booking["createdDateTime"] = created_obj.strftime(
+                        "%b %d, %Y %I:%M %p"
+                    )
+
+                # Format confirmed/cancelled datetime
+                if confirmed_at:
+                    if isinstance(confirmed_at, str):
+                        confirmed_obj = datetime.fromisoformat(
+                            confirmed_at.replace("Z", "+00:00")
+                        )
+                    else:
+                        confirmed_obj = confirmed_at
+                    formatted_booking["confirmedDateTime"] = confirmed_obj.strftime(
+                        "%b %d, %Y %I:%M %p"
+                    )
+
+                if cancelled_at:
+                    if isinstance(cancelled_at, str):
+                        cancelled_obj = datetime.fromisoformat(
+                            cancelled_at.replace("Z", "+00:00")
+                        )
+                    else:
+                        cancelled_obj = cancelled_at
+                    formatted_booking["cancelledDateTime"] = cancelled_obj.strftime(
+                        "%b %d, %Y %I:%M %p"
+                    )
+
+                bookings.append(formatted_booking)
+
+            except Exception as e:
+                logger.error(
+                    f"Error formatting booking {booking.get('id', 'unknown')}: {e}"
+                )
+                # Add the booking anyway with basic formatting
+                booking_dict = dict(booking)
+                booking_dict["formatted_time"] = "Time formatting error"
+                booking_dict["createdDateTime"] = "N/A"
+                bookings.append(booking_dict)
+
+        logger.info(f"Successfully formatted {len(bookings)} bookings for display")
+
+        return render_template("admin_bookings.html", bookings=bookings)
+
+    except Exception as e:
+        logger.error(f"Admin bookings error: {e}")
+        import traceback
+
+        traceback.print_exc()
+        return render_template("admin_bookings.html", bookings=[], error=str(e))
 
 
 @admin_bp.route("/schedule")
@@ -720,6 +881,75 @@ def admin_schedule():
 def admin_booking_control():
     """Booking control center"""
     return render_template("admin_booking_control.html")
+
+
+# Booking Action Routes (Confirm/Decline)
+@admin_bp.route("/confirm-booking/<booking_id>")
+@admin_required
+def confirm_booking(booking_id):
+    """Confirm a booking"""
+    try:
+        update_query = """
+            UPDATE bookings 
+            SET status = 'confirmed', payment_verified = TRUE, confirmed_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """
+
+        result = AdminDatabaseManager.execute_query(
+            update_query, (booking_id,), fetch_all=False
+        )
+
+        if result is not None:
+            logger.info(f"Confirmed booking: {booking_id}")
+            return redirect(
+                url_for("admin_panel.admin_bookings")
+                + "?message=Booking confirmed successfully"
+            )
+        else:
+            return redirect(
+                url_for("admin_panel.admin_bookings")
+                + "?error=Failed to confirm booking"
+            )
+
+    except Exception as e:
+        logger.error(f"Error confirming booking: {e}")
+        return redirect(
+            url_for("admin_panel.admin_bookings") + "?error=Error confirming booking"
+        )
+
+
+@admin_bp.route("/decline-booking/<booking_id>")
+@admin_required
+def decline_booking(booking_id):
+    """Decline a booking"""
+    try:
+        update_query = """
+            UPDATE bookings 
+            SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """
+
+        result = AdminDatabaseManager.execute_query(
+            update_query, (booking_id,), fetch_all=False
+        )
+
+        if result is not None:
+            logger.info(f"Declined booking: {booking_id}")
+            return redirect(
+                url_for("admin_panel.admin_bookings")
+                + "?message=Booking declined successfully"
+            )
+        else:
+            return redirect(
+                url_for("admin_panel.admin_bookings")
+                + "?error=Failed to decline booking"
+            )
+
+    except Exception as e:
+        logger.error(f"Error declining booking: {e}")
+        return redirect(
+            url_for("admin_panel.admin_bookings") + "?error=Error declining booking"
+        )
 
 
 # API Routes
@@ -768,14 +998,23 @@ def api_schedule_data():
         end_date = data.get("endDate")
         sport_filter = data.get("sport")
 
+        logger.info(
+            f"Schedule API called with: {start_date} to {end_date}, sport: {sport_filter}"
+        )
+
         schedule = AdminScheduleService.get_schedule_data(
             start_date, end_date, sport_filter
         )
+
+        logger.info(f"Schedule API returning {len(schedule)} days of data")
 
         return jsonify({"success": True, "schedule": schedule})
 
     except Exception as e:
         logger.error(f"Schedule API error: {e}")
+        import traceback
+
+        traceback.print_exc()
         return jsonify(
             {
                 "success": True,

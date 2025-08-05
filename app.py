@@ -302,7 +302,7 @@ def init_database():
         return False
 
 
-# Routes
+# Main Routes
 @app.route("/")
 def index():
     """Main page route"""
@@ -315,6 +315,7 @@ def booking():
     return render_template("booking.html")
 
 
+# API Routes
 @app.route("/api/booked-slots", methods=["POST"])
 def get_booked_slots():
     """Get booked time slots for a specific court and date"""
@@ -460,11 +461,11 @@ def submit_contact():
         return jsonify({"success": False, "error": "Internal server error"}), 500
 
 
-# Admin routes for viewing bookings (legacy support)
-@app.route("/admin/bookings")
-def admin_bookings():
-    """Legacy admin bookings route - redirects to new admin panel"""
-    return redirect(url_for("admin_panel.admin_dashboard"))
+# REMOVED: All duplicate admin routes - these are now handled by admin_routes.py
+# The following routes have been moved to admin_routes.py:
+# - /admin/bookings
+# - /admin/confirm-booking/<booking_id>
+# - /admin/decline-booking/<booking_id>
 
 
 @app.route("/admin/contacts")
@@ -492,9 +493,7 @@ def server_error(error):
     return render_template("500.html"), 500
 
 
-# ADD THESE DEBUG ENDPOINTS TO YOUR app.py FILE
-
-
+# Debug endpoints for troubleshooting
 @app.route("/api/debug-bookings-customer", methods=["GET"])
 def debug_bookings_customer():
     """Debug endpoint for customer side - no admin auth required"""
@@ -577,140 +576,6 @@ def test_db_customer():
         return jsonify(
             {"success": False, "error": str(e), "message": "Database connection failed"}
         )
-
-
-@app.route("/api/test-specific-slot", methods=["POST"])
-def test_specific_slot():
-    """Test a specific court and date combination"""
-    try:
-        data = request.json
-        court = data.get("court", "padel-1")
-        date = data.get("date", "2025-08-05")
-
-        logger.info(f"Testing specific slot: {court} on {date}")
-
-        # Get all bookings for this court and date
-        query = """
-            SELECT id, status, player_name, selected_slots, start_time, end_time, created_at
-            FROM bookings 
-            WHERE court = %s AND booking_date = %s
-            ORDER BY created_at DESC
-        """
-
-        bookings = DatabaseManager.execute_query(query, (court, date))
-
-        results = []
-        total_slots = []
-
-        if bookings:
-            for booking in bookings:
-                booking_dict = dict(booking)
-
-                # Parse selected slots
-                slots = []
-                selected_slots = booking_dict.get("selected_slots")
-                if selected_slots:
-                    if isinstance(selected_slots, str):
-                        selected_slots = json.loads(selected_slots)
-                    slots = [
-                        slot.get("time")
-                        for slot in selected_slots
-                        if isinstance(slot, dict) and "time" in slot
-                    ]
-                    total_slots.extend(slots)
-
-                results.append(
-                    {
-                        "id": booking_dict.get("id"),
-                        "status": booking_dict.get("status"),
-                        "player_name": booking_dict.get("player_name"),
-                        "slots": slots,
-                        "start_time": (
-                            str(booking_dict.get("start_time"))
-                            if booking_dict.get("start_time")
-                            else None
-                        ),
-                        "end_time": (
-                            str(booking_dict.get("end_time"))
-                            if booking_dict.get("end_time")
-                            else None
-                        ),
-                        "created_at": (
-                            booking_dict.get("created_at").isoformat()
-                            if booking_dict.get("created_at")
-                            else None
-                        ),
-                    }
-                )
-
-        # Check multi-purpose conflicts
-        conflicts = []
-        if court in MULTI_PURPOSE_COURTS:
-            multi_court_type = MULTI_PURPOSE_COURTS[court]
-            conflicting_courts = [
-                k
-                for k, v in MULTI_PURPOSE_COURTS.items()
-                if v == multi_court_type and k != court
-            ]
-
-            if conflicting_courts:
-                conflict_query = """
-                    SELECT id, status, player_name, selected_slots
-                    FROM bookings 
-                    WHERE court = ANY(%s) AND booking_date = %s AND status IN ('confirmed', 'pending_payment')
-                """
-
-                conflict_bookings = DatabaseManager.execute_query(
-                    conflict_query, (conflicting_courts, date)
-                )
-
-                if conflict_bookings:
-                    for conflict_booking in conflict_bookings:
-                        conflict_dict = dict(conflict_booking)
-                        conflict_slots = conflict_dict.get("selected_slots")
-                        if conflict_slots:
-                            if isinstance(conflict_slots, str):
-                                conflict_slots = json.loads(conflict_slots)
-                            conflict_slot_times = [
-                                slot.get("time")
-                                for slot in conflict_slots
-                                if isinstance(slot, dict) and "time" in slot
-                            ]
-                            conflicts.append(
-                                {
-                                    "id": conflict_dict.get("id"),
-                                    "court": "unknown",  # We'd need to track this better
-                                    "player_name": conflict_dict.get("player_name"),
-                                    "status": conflict_dict.get("status"),
-                                    "slots": conflict_slot_times,
-                                }
-                            )
-                            total_slots.extend(conflict_slot_times)
-
-        unique_booked_slots = sorted(list(set(total_slots)))
-
-        return jsonify(
-            {
-                "success": True,
-                "court": court,
-                "date": date,
-                "direct_bookings": results,
-                "conflicts": conflicts,
-                "total_booked_slots": unique_booked_slots,
-                "summary": {
-                    "direct_booking_count": len(results),
-                    "conflict_count": len(conflicts),
-                    "total_slot_count": len(unique_booked_slots),
-                },
-            }
-        )
-
-    except Exception as e:
-        logger.error(f"Test specific slot error: {e}")
-        import traceback
-
-        traceback.print_exc()
-        return jsonify({"success": False, "error": str(e)})
 
 
 if __name__ == "__main__":
