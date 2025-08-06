@@ -7,6 +7,7 @@ class AdminScheduleManager {
     this.currentView = "week";
     this.scheduleData = {};
     this.selectedSlot = null;
+    
 
     this.courtConfig = {
       padel: [
@@ -359,7 +360,7 @@ class AdminScheduleManager {
     const timeSlotCount = this.timeSlots.length;
 
     console.log(
-      `📅 FIXED: Rendering day view for ${dateStr} with ${courts.length} courts`
+      `📅 ENHANCED: Rendering day view for ${dateStr} with ${courts.length} courts (merged bookings enabled)`
     );
 
     grid.style.gridTemplateColumns = `100px repeat(${courts.length}, 1fr)`;
@@ -381,7 +382,7 @@ class AdminScheduleManager {
       grid.appendChild(courtHeader);
     });
 
-    // Create time slots
+    // Create time slots with merged booking support
     this.timeSlots.forEach((time, timeIndex) => {
       // Time label
       const timeLabel = document.createElement("div");
@@ -389,16 +390,14 @@ class AdminScheduleManager {
       timeLabel.textContent = this.formatTime(time);
       grid.appendChild(timeLabel);
 
-      // Court slots
+      // Court slots with enhanced merged booking logic
       courts.forEach((court) => {
         const slot = this.createTimeSlot(dateStr, time, court.id, timeIndex);
         grid.appendChild(slot);
       });
     });
 
-    console.log(
-      `✅ FIXED: Day view rendered with ${this.timeSlots.length} time slots for ${courts.length} courts`
-    );
+    console.log(`✅ ENHANCED: Day view rendered with merged bookings`);
   }
 
   renderWeekView(grid) {
@@ -456,6 +455,83 @@ class AdminScheduleManager {
       }
     });
   }
+  groupConsecutiveBookings(scheduleData, date, courtId) {
+    try {
+      if (!scheduleData[date] || !scheduleData[date][courtId]) {
+        return {};
+      }
+
+      const courtBookings = scheduleData[date][courtId];
+      const bookingGroups = {};
+      const processedSlots = new Set();
+
+      // Group bookings by booking ID
+      const bookingsByID = {};
+      Object.keys(courtBookings).forEach((time) => {
+        const booking = courtBookings[time];
+        const bookingId = booking.bookingId;
+
+        if (!bookingsByID[bookingId]) {
+          bookingsByID[bookingId] = [];
+        }
+        bookingsByID[bookingId].push({ time, ...booking });
+      });
+
+      // Create merged slots for each booking
+      Object.keys(bookingsByID).forEach((bookingId) => {
+        const slots = bookingsByID[bookingId];
+
+        // Sort slots by time
+        slots.sort((a, b) => a.time.localeCompare(b.time));
+
+        if (slots.length > 1) {
+          // Multi-slot booking - create merged group
+          const firstSlot = slots[0];
+          const lastSlot = slots[slots.length - 1];
+
+          bookingGroups[firstSlot.time] = {
+            ...firstSlot,
+            isGroupStart: true,
+            groupSize: slots.length,
+            endTime: lastSlot.time,
+            mergedBooking: true,
+          };
+
+          // Mark other slots as part of group
+          for (let i = 1; i < slots.length; i++) {
+            bookingGroups[slots[i].time] = {
+              ...slots[i],
+              isGroupContinuation: true,
+              groupStartTime: firstSlot.time,
+              mergedBooking: true,
+            };
+            processedSlots.add(slots[i].time);
+          }
+
+          processedSlots.add(firstSlot.time);
+        } else {
+          // Single slot booking
+          bookingGroups[slots[0].time] = {
+            ...slots[0],
+            isGroupStart: true,
+            groupSize: 1,
+            mergedBooking: false,
+          };
+          processedSlots.add(slots[0].time);
+        }
+      });
+
+      console.log(
+        `🔗 MERGED: Created ${
+          Object.keys(bookingsByID).length
+        } booking groups for ${courtId} on ${date}`
+      );
+      return bookingGroups;
+    } catch (error) {
+      console.error("❌ Error grouping bookings:", error);
+      return {};
+    }
+  }
 
   // FIXED: Enhanced createTimeSlot method with comprehensive debugging
   createTimeSlot(date, time, courtId, timeIndex) {
@@ -467,19 +543,95 @@ class AdminScheduleManager {
     slot.dataset.timeIndex = timeIndex;
 
     try {
-      const slotData = this.getSlotData(date, time, courtId);
+      // Get grouped booking data instead of individual slot data
+      const groupedBookings = this.groupConsecutiveBookings(
+        this.scheduleData,
+        date,
+        courtId
+      );
+      const slotData =
+        groupedBookings[time] || this.getSlotData(date, time, courtId);
 
-      if (slotData) {
-        console.log(
-          `🎯 FIXED: Found booking data for ${courtId} at ${time} on ${date}:`,
-          slotData
-        );
+      if (slotData && slotData.mergedBooking) {
+        // Handle merged booking slots
+        if (slotData.isGroupContinuation) {
+          // This is a continuation slot - make it invisible/minimal
+          slot.className = `time-slot ${slotData.status} group-continuation`;
+          slot.innerHTML = `<div class="slot-content continuation-marker"></div>`;
 
-        // FIXED: Apply proper CSS classes based on status
+          // Style as continuation
+          slot.style.backgroundColor = "transparent";
+          slot.style.border = "none";
+          slot.style.borderLeft = "20px solid #008000";
+          slot.style.borderRight = "20px solid #008000";
+
+          // Click handler for continuation slots
+          slot.addEventListener("click", () => {
+            const startSlot = document.querySelector(
+              `[data-time="${slotData.groupStartTime}"][data-court="${courtId}"]`
+            );
+            if (startSlot) {
+              startSlot.click();
+            }
+          });
+        } else if (slotData.isGroupStart) {
+          // This is the main booking slot - style it prominently
+          const statusClass = slotData.status || "booked-pending";
+          slot.className = `time-slot ${statusClass} group-start`;
+
+          // Calculate duration for display
+          const duration = slotData.groupSize * 0.5; // Each slot is 30 minutes
+
+          slot.innerHTML = `
+            <div class="slot-content merged-booking">
+              <div class="booking-header">
+                <div class="slot-title" style="font-weight: 700; font-size: 0.9rem; margin-bottom: 2px;">
+                  ${slotData.title || "Booked"}
+                </div>
+                <div class="booking-duration" style="font-size: 0.7rem; opacity: 0.9; background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 10px; display: inline-block;">
+                  ${duration}h
+                </div>
+              </div>
+              <div class="slot-subtitle" style="font-size: 0.75rem; opacity: 0.95; margin-top: 2px;">
+                PKR ${(slotData.amount || 0).toLocaleString()}
+              </div>
+              ${
+                slotData.subtitle && slotData.subtitle.includes("Multi Court")
+                  ? `<div style="font-size: 0.6rem; opacity: 0.8; margin-top: 1px;">Multi Court</div>`
+                  : ""
+              }
+            </div>
+          `;
+
+          // Enhanced styling for merged bookings
+          const statusColors = {
+            "booked-pending": "#ffc107",
+            "booked-confirmed": "#28a745",
+            "booked-conflict": "#dc3545",
+            "booked-cancelled": "#6c757d",
+          };
+
+          const statusColor = statusColors[statusClass] || "#007bff";
+          slot.style.backgroundColor = statusColor;
+          slot.style.color = "white";
+          slot.style.border = `3px solid ${statusColor}`;
+          slot.style.borderRadius = "8px 8px 0 0";
+          slot.style.fontWeight = "600";
+          slot.style.position = "relative";
+          slot.style.zIndex = "10";
+
+          // Add subtle shadow for depth
+          slot.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+
+          console.log(
+            `✅ MERGED: Created merged booking slot for ${slotData.title} (${duration}h) at ${time}`
+          );
+        }
+      } else if (slotData && !slotData.mergedBooking) {
+        // Regular single slot booking (fallback to original logic)
         const statusClass = slotData.status || "booked-pending";
         slot.className = `time-slot ${statusClass}`;
 
-        // FIXED: Enhanced slot content with better visibility
         slot.innerHTML = `
           <div class="slot-content">
             <div class="slot-title" style="font-weight: 600; font-size: 0.8rem;">${
@@ -493,7 +645,6 @@ class AdminScheduleManager {
           </div>
         `;
 
-        // FIXED: Add visual indicators for different booking types
         const statusColors = {
           "booked-pending": "#ffc107",
           "booked-confirmed": "#28a745",
@@ -505,16 +656,8 @@ class AdminScheduleManager {
         slot.style.backgroundColor = statusColor;
         slot.style.color = "white";
         slot.style.border = `2px solid ${statusColor}`;
-
-        slot.title = `${slotData.title} - ${slotData.status} - ${
-          slotData.subtitle || ""
-        }`;
-
-        console.log(
-          `✅ FIXED: Styled slot ${time} for ${courtId} with status ${statusClass}`
-        );
       } else {
-        // Available slot
+        // Available slot (original logic)
         slot.innerHTML = `
           <div class="slot-content">
             <div class="slot-title" style="font-size: 0.8rem;">Available</div>
@@ -527,9 +670,9 @@ class AdminScheduleManager {
         slot.style.border = "1px solid #dee2e6";
       }
 
-      // Add click event
+      // Add click event (same as before)
       slot.addEventListener("click", () => {
-        console.log("🖱️ FIXED: Slot clicked:", {
+        console.log("🖱️ ENHANCED: Slot clicked:", {
           date,
           time,
           courtId,
@@ -539,9 +682,10 @@ class AdminScheduleManager {
       });
     } catch (error) {
       console.error(
-        `❌ FIXED: Error creating slot for ${courtId} at ${time}:`,
+        `❌ ENHANCED: Error creating slot for ${courtId} at ${time}:`,
         error
       );
+      // Fallback to safe display
       slot.innerHTML = `
         <div class="slot-content">
           <div class="slot-title" style="color: red;">Error</div>
@@ -1229,55 +1373,75 @@ window.debugScheduleData = function () {
   }
 };
 
-// Add CSS animations
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes slideInUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+const enhancedStyle = document.createElement("style");
+enhancedStyle.id = "merged-bookings-style";
+enhancedStyle.textContent = `
+  /* Enhanced styles for merged booking slots */
+  .time-slot.group-start {
+    position: relative;
+    z-index: 10;
   }
   
-  @keyframes slideOutDown {
-    from { transform: translateY(0); opacity: 1; }
-    to { transform: translateY(100%); opacity: 0; }
+  .time-slot.group-continuation {
+    border-top: none !important;
+    border-bottom: none !important;
+    position: relative;
+    z-index: 5;
   }
   
-  @keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+  .time-slot.group-continuation:last-of-type {
+    border-bottom: 3px solid #007bff !important;
+    border-radius: 0 0 8px 8px !important;
   }
   
-  @keyframes slideOutRight {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
+  .merged-booking {
+    padding: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
   }
   
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-
-  .toast-content {
+  .booking-header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    flex: 1;
+    justify-content: space-between;
+    margin-bottom: 4px;
   }
   
-  .toast-close {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 0.9rem;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
+  .continuation-marker {
+    height: 100%;
+    background: linear-gradient(90deg, transparent 20%, rgba(255,255,255,0.1) 50%, transparent 80%);
   }
   
-  .toast-close:hover {
-    opacity: 1;
+  .time-slot.group-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    transition: all 0.2s ease;
+  }
+  
+  .time-slot.group-continuation:hover {
+    background: rgba(0,123,255,0.1) !important;
+  }
+  
+  /* Animation for merged bookings */
+  @keyframes mergedBookingPulse {
+    0% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    50% { box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+    100% { box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  }
+  
+  .time-slot.group-start.booked-confirmed {
+    animation: mergedBookingPulse 3s infinite;
   }
 `;
-document.head.appendChild(style);
 
-console.log("🔧 FIXED: Admin schedule fixes loaded successfully!");
+// Only add styles if not already present
+if (!document.getElementById("merged-bookings-style")) {
+  document.head.appendChild(enhancedStyle);
+}
+
+console.log(
+  "🎨 ENHANCED: Merged booking slots enhancement loaded - bookings will now span across multiple time slots professionally!"
+);
