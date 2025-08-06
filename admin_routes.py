@@ -699,39 +699,171 @@ class AdminBookingService:
             logger.error(f"Error performing booking action: {e}")
             raise e
 
-    @staticmethod
-    def search_bookings(method, value=None, start_date=None, end_date=None):
-        """Search bookings by various criteria"""
-        try:
-            if method == "id":
-                query = "SELECT * FROM bookings WHERE id = %s"
-                params = (value,)
-            elif method == "phone":
-                query = "SELECT * FROM bookings WHERE player_phone LIKE %s ORDER BY created_at DESC"
-                params = (f"%{value}%",)
-            elif method == "name":
-                query = "SELECT * FROM bookings WHERE player_name ILIKE %s ORDER BY created_at DESC"
-                params = (f"%{value}%",)
-            elif method == "date":
-                query = "SELECT * FROM bookings WHERE booking_date BETWEEN %s AND %s ORDER BY booking_date DESC, start_time DESC"
-                params = (start_date, end_date)
-            else:
-                raise ValueError(f"Invalid search method: {method}")
 
-            bookings = AdminDatabaseManager.execute_query(query, params) or []
+# FIXED: Search bookings method in AdminBookingService class
+# Replace the existing search_bookings method with this fixed version
 
-            # Format bookings for frontend
-            formatted_bookings = []
-            for booking in bookings:
+
+@staticmethod
+def search_bookings(method, value=None, start_date=None, end_date=None):
+    """FIXED: Search bookings by various criteria with proper JSON serialization"""
+    try:
+        if method == "id":
+            query = "SELECT * FROM bookings WHERE id = %s"
+            params = (value,)
+        elif method == "phone":
+            query = "SELECT * FROM bookings WHERE player_phone LIKE %s ORDER BY created_at DESC"
+            params = (f"%{value}%",)
+        elif method == "name":
+            query = "SELECT * FROM bookings WHERE player_name ILIKE %s ORDER BY created_at DESC"
+            params = (f"%{value}%",)
+        elif method == "date":
+            query = "SELECT * FROM bookings WHERE booking_date BETWEEN %s AND %s ORDER BY booking_date DESC, start_time DESC"
+            params = (start_date, end_date)
+        else:
+            raise ValueError(f"Invalid search method: {method}")
+
+        bookings = AdminDatabaseManager.execute_query(query, params) or []
+
+        # FIXED: Format bookings for frontend with proper serialization
+        formatted_bookings = []
+        for booking in bookings:
+            try:
                 booking_dict = dict(booking)
-                formatted_booking = _format_booking_for_display(booking_dict)
+
+                # FIXED: Handle datetime objects properly
+                formatted_booking = {
+                    "id": booking_dict.get("id"),
+                    "sport": booking_dict.get("sport"),
+                    "court": booking_dict.get("court"),
+                    "courtName": booking_dict.get("court_name"),
+                    "playerName": booking_dict.get("player_name"),
+                    "playerPhone": booking_dict.get("player_phone"),
+                    "playerEmail": booking_dict.get("player_email", ""),
+                    "totalAmount": booking_dict.get("total_amount", 0),
+                    "status": booking_dict.get("status"),
+                    "duration": (
+                        float(booking_dict.get("duration", 1.0))
+                        if booking_dict.get("duration")
+                        else 1.0
+                    ),
+                }
+
+                # FIXED: Convert dates and times to strings
+                if booking_dict.get("booking_date"):
+                    if hasattr(booking_dict["booking_date"], "strftime"):
+                        formatted_booking["date"] = booking_dict[
+                            "booking_date"
+                        ].strftime("%Y-%m-%d")
+                        formatted_booking["booking_date"] = booking_dict[
+                            "booking_date"
+                        ].strftime("%Y-%m-%d")
+                    else:
+                        formatted_booking["date"] = str(booking_dict["booking_date"])
+                        formatted_booking["booking_date"] = str(
+                            booking_dict["booking_date"]
+                        )
+
+                if booking_dict.get("start_time"):
+                    if hasattr(booking_dict["start_time"], "strftime"):
+                        formatted_booking["startTime"] = booking_dict[
+                            "start_time"
+                        ].strftime("%H:%M")
+                    else:
+                        formatted_booking["startTime"] = str(booking_dict["start_time"])
+
+                if booking_dict.get("end_time"):
+                    if hasattr(booking_dict["end_time"], "strftime"):
+                        formatted_booking["endTime"] = booking_dict[
+                            "end_time"
+                        ].strftime("%H:%M")
+                    else:
+                        formatted_booking["endTime"] = str(booking_dict["end_time"])
+
+                if booking_dict.get("created_at"):
+                    if hasattr(booking_dict["created_at"], "strftime"):
+                        formatted_booking["createdDateTime"] = booking_dict[
+                            "created_at"
+                        ].strftime("%b %d, %Y %I:%M %p")
+                    else:
+                        formatted_booking["createdDateTime"] = str(
+                            booking_dict["created_at"]
+                        )
+
+                # FIXED: Handle selected_slots JSON
+                if booking_dict.get("selected_slots"):
+                    try:
+                        if isinstance(booking_dict["selected_slots"], str):
+                            formatted_booking["selectedSlots"] = json.loads(
+                                booking_dict["selected_slots"]
+                            )
+                        else:
+                            formatted_booking["selectedSlots"] = booking_dict[
+                                "selected_slots"
+                            ]
+                    except (json.JSONDecodeError, TypeError):
+                        formatted_booking["selectedSlots"] = []
+                else:
+                    formatted_booking["selectedSlots"] = []
+
+                # FIXED: Create formatted time display
+                if (
+                    formatted_booking.get("date")
+                    and formatted_booking.get("startTime")
+                    and formatted_booking.get("endTime")
+                ):
+                    try:
+                        booking_date = datetime.strptime(
+                            formatted_booking["date"], "%Y-%m-%d"
+                        )
+                        formatted_date = booking_date.strftime("%a, %b %d")
+
+                        # Convert to 12-hour format
+                        start_time = datetime.strptime(
+                            formatted_booking["startTime"], "%H:%M"
+                        )
+                        end_time = datetime.strptime(
+                            formatted_booking["endTime"], "%H:%M"
+                        )
+
+                        start_12hr = start_time.strftime("%I:%M %p").lstrip("0")
+                        end_12hr = end_time.strftime("%I:%M %p").lstrip("0")
+
+                        formatted_booking["formatted_time"] = (
+                            f'<div class="time-display">{formatted_date}</div><div style="font-weight: 600; color: #28a745;">{start_12hr} - {end_12hr}</div>'
+                        )
+                    except (ValueError, TypeError) as e:
+                        formatted_booking["formatted_time"] = (
+                            f"{formatted_booking.get('startTime', 'N/A')} - {formatted_booking.get('endTime', 'N/A')}"
+                        )
+
                 formatted_bookings.append(formatted_booking)
 
-            return formatted_bookings
+            except Exception as e:
+                logger.error(
+                    f"Error formatting booking {booking.get('id', 'unknown')}: {e}"
+                )
+                # Add basic booking info even if formatting fails
+                formatted_bookings.append(
+                    {
+                        "id": str(booking.get("id", "N/A")),
+                        "playerName": str(booking.get("player_name", "N/A")),
+                        "status": str(booking.get("status", "unknown")),
+                        "formatted_time": "Error formatting time",
+                    }
+                )
 
-        except Exception as e:
-            logger.error(f"Error searching bookings: {e}")
-            return []
+        logger.info(
+            f"FIXED: Successfully formatted {len(formatted_bookings)} bookings for search"
+        )
+        return formatted_bookings
+
+    except Exception as e:
+        logger.error(f"FIXED: Error searching bookings: {e}")
+        import traceback
+
+        logger.error(f"FIXED: Full traceback: {traceback.format_exc()}")
+        return []
 
     # Utility methods
     @staticmethod
